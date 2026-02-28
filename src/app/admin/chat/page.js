@@ -95,6 +95,28 @@ export default function ChatDashboard() {
         setSending(false);
     };
 
+    const [suggesting, setSuggesting] = useState(false);
+
+    const handleSuggestReply = async () => {
+        if (!activeLead) return;
+        setSuggesting(true);
+        try {
+            const res = await fetch('/api/ai/suggest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: activeLead._id })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setMessageInput(data.suggestion);
+            }
+        } catch (error) {
+            console.error('Failed to get suggestion:', error);
+        } finally {
+            setSuggesting(false);
+        }
+    };
+
     const activeLead = leads.find(l => l._id === activeLeadId);
 
     const toggleBotPause = async () => {
@@ -288,11 +310,20 @@ export default function ChatDashboard() {
                     <div className="input-area">
                         {activeLead.botPaused ? (
                             <form onSubmit={handleSendMessage} className="message-form">
+                                <button
+                                    type="button"
+                                    className="btn-ai-suggest"
+                                    onClick={handleSuggestReply}
+                                    disabled={suggesting}
+                                    title="Sugerir resposta com IA"
+                                >
+                                    {suggesting ? <span className="mini-spinner" /> : '✨'}
+                                </button>
                                 <div className="input-wrapper">
                                     <textarea
                                         value={messageInput}
                                         onChange={(e) => setMessageInput(e.target.value)}
-                                        placeholder="Digite sua resposta para o cliente... (Enter para enviar)"
+                                        placeholder="Digite sua resposta ou use o ✨ para sugestão..."
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter' && !e.shiftKey) {
                                                 e.preventDefault();
@@ -321,6 +352,7 @@ export default function ChatDashboard() {
                         )}
                     </div>
                 </div>
+
             ) : (
                 <div className="no-chat-selected">
                     <div className="no-chat-icon">💬</div>
@@ -333,11 +365,12 @@ export default function ChatDashboard() {
                 .chat-container {
                     display: flex;
                     height: calc(100vh - 4rem);
-                    background: #f8fafc;
-                    border-radius: 1rem;
-                    border: 1px solid #e2e8f0;
+                    background: rgba(255, 255, 255, 0.7);
+                    backdrop-filter: blur(12px);
+                    border-radius: 1.25rem;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
                     overflow: hidden;
-                    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+                    box-shadow: 0 20px 50px rgba(0,0,0,0.1);
                     margin: -1rem;
                 }
 
@@ -345,23 +378,24 @@ export default function ChatDashboard() {
                 .sidebar {
                     width: 340px;
                     min-width: 280px;
-                    border-right: 1px solid #e2e8f0;
-                    background: #ffffff;
+                    border-right: 1px solid rgba(226, 232, 240, 0.8);
+                    background: rgba(255, 255, 255, 0.5);
                     display: flex;
                     flex-direction: column;
                     flex-shrink: 0;
                 }
                 .sidebar-header {
-                    padding: 1.25rem;
-                    border-bottom: 1px solid #f1f5f9;
-                    background: #f8fafc;
+                    padding: 1.5rem;
+                    border-bottom: 1px solid rgba(241, 245, 249, 0.8);
+                    background: transparent;
                 }
                 .sidebar-title { margin-bottom: 0.75rem; }
                 .sidebar-title h2 {
-                    font-size: 1.1rem;
-                    font-weight: 700;
-                    color: #0f172a;
-                    margin: 0 0 0.15rem;
+                    font-size: 1.25rem;
+                    background: linear-gradient(to right, #059669, #7c3aed);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    font-weight: 800;
                     display: flex;
                     align-items: center;
                     gap: 0.5rem;
@@ -406,15 +440,19 @@ export default function ChatDashboard() {
                     cursor: pointer;
                     transition: background 0.15s;
                 }
-                .lead-item:hover { background: #f8fafc; }
-                .lead-item.active { background: #eff6ff; border-left: 3px solid #3b82f6; padding-left: calc(1.25rem - 3px); }
+                .lead-item:hover { background: rgba(248, 250, 252, 0.8); }
+                .lead-item.active { 
+                    background: linear-gradient(to right, rgba(239, 246, 255, 0.8), rgba(245, 243, 255, 0.8));
+                    border-left: 4px solid #7c3aed; 
+                    padding-left: calc(1.25rem - 4px);
+                }
                 .lead-item.unread .lead-name { font-weight: 700; color: #0f172a; }
                 .lead-avatar {
                     position: relative;
                     width: 42px;
                     height: 42px;
                     border-radius: 50%;
-                    background: linear-gradient(135deg, #10b981, #0d9488);
+                    background: linear-gradient(135deg, #10b981, #7c3aed);
                     color: white;
                     font-size: 0.85rem;
                     font-weight: 700;
@@ -648,6 +686,27 @@ export default function ChatDashboard() {
                     background: white;
                     box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
                 }
+                .btn-ai-suggest {
+                    width: 48px;
+                    height: 48px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: linear-gradient(135deg, #6366f1, #a855f7);
+                    color: white;
+                    border: none;
+                    border-radius: 0.75rem;
+                    cursor: pointer;
+                    transition: 0.2s;
+                    font-size: 1.25rem;
+                    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+                }
+                .btn-ai-suggest:hover:not(:disabled) {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+                }
+                .btn-ai-suggest:disabled { opacity: 0.6; cursor: not-allowed; }
+
                 .btn-send {
                     width: 48px;
                     height: 48px;
@@ -662,6 +721,7 @@ export default function ChatDashboard() {
                     cursor: pointer;
                     transition: 0.2s;
                     flex-shrink: 0;
+                    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
                 }
                 .btn-send:hover:not(:disabled) { filter: brightness(1.1); transform: scale(1.05); }
                 .btn-send:disabled { opacity: 0.4; cursor: not-allowed; }

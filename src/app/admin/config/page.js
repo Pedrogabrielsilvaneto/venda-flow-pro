@@ -23,6 +23,16 @@ const SECTIONS = [
         ]
     },
     {
+        id: 'ai',
+        title: '✨ Inteligência Artificial (Gemini)',
+        desc: 'Ative o "Cérebro IA" para conversas naturais e sugestões de vendas profissionais.',
+        fields: [
+            { key: 'ai_driven_bot', label: 'Robô Orientado por IA', type: 'select', options: [{ v: 'true', l: 'Ativo (Conversa Natural)' }, { v: 'false', l: 'Inativo (Fluxo Manual)' }], help: 'Quando ativo, o robô usa IA para entender e responder o cliente em vez de seguir um menu fixo.' },
+            { key: 'gemini_api_key', label: 'Gemini API Key', type: 'password', placeholder: 'AIzaSy...', help: 'Chave gratuita do Google AI Studio (Gemini 1.5 Flash)' },
+            { key: 'ai_custom_instructions', label: 'Instruções Customizadas da IA', type: 'textarea', placeholder: 'Sempre ofereça desconto de 5% se o cliente hesitar...', help: 'Diretrizes extras que a IA seguirá em todas as conversas.' },
+        ]
+    },
+    {
         id: 'budget',
         title: '💰 Regras de Orçamento',
         desc: 'Ajuste como o robô calcula os orçamentos para os clientes.',
@@ -122,6 +132,15 @@ export default function AdminConfig() {
                                         value={values[field.key] ?? ''}
                                         onChange={e => handleChange(field.key, e.target.value)}
                                     />
+                                ) : field.type === 'select' ? (
+                                    <select
+                                        value={String(values[field.key] ?? 'false')}
+                                        onChange={e => handleChange(field.key, e.target.value === 'true')}
+                                    >
+                                        {field.options.map(opt => (
+                                            <option key={opt.v} value={opt.v}>{opt.l}</option>
+                                        ))}
+                                    </select>
                                 ) : field.type === 'password' ? (
                                     <div className="password-wrap">
                                         <input
