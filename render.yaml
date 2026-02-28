@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: vendaflow-bot-engine
+    env: node
+    buildCommand: npm install
+    startCommand: node local-bot.js
+    plan: free

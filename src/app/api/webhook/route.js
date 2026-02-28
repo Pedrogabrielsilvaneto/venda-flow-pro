@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
+import Config from '@/models/Config';
 import { handleIncomingMessage } from '@/lib/bot-logic';
+
+async function getVerifyToken() {
+    try {
+        await dbConnect();
+        const cfg = await Config.findOne({ key: 'whatsapp_verify_token' });
+        return cfg?.value || process.env.WHATSAPP_VERIFY_TOKEN || '';
+    } catch {
+        return process.env.WHATSAPP_VERIFY_TOKEN || '';
+    }
+}
 
 export async function GET(request) {
     const { searchParams } = new URL(request.url);
@@ -9,7 +20,8 @@ export async function GET(request) {
     const challenge = searchParams.get('hub.challenge');
 
     if (mode && token) {
-        if (mode === 'subscribe' && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+        const verifyToken = await getVerifyToken();
+        if (mode === 'subscribe' && token === verifyToken) {
             console.log('WEBHOOK_VERIFIED');
             return new NextResponse(challenge, { status: 200 });
         } else {

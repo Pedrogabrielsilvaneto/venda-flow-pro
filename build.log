@@ -1,0 +1,16 @@
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 3.9s
+  Running TypeScript ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/17) ...
+Error occurred prerendering page "/admin/chat". Read more: https://nextjs.org/docs/messages/prerender-error
+TypeError: Cannot destructure property 'data' of '(0 , e.useSession)(...)' as it is undefined.
+    at O (C:\Users\Pedro Neto\.gemini\antigravity\scratch\pereira-bot-web\.next\server\chunks\ssr\src_app_admin_chat_page_0380c931.js:1:18671) {
+  digest: '526324615'
+}
+Export encountered an error on /admin/chat/page: /admin/chat, exiting the build.
+⨯ Next.js build worker exited with code: 1 and signal: null
