@@ -5,7 +5,7 @@ export async function middleware(req) {
     try {
         const token = await getToken({
             req,
-            secret: process.env.AUTH_SECRET
+            secret: process.env.AUTH_SECRET || "venda_flow_default_secret_7626919b74d81",
         });
         const isLoggedIn = !!token;
         const { pathname } = req.nextUrl;
