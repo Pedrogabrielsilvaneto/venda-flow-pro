@@ -54,5 +54,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     pages: {
         signIn: "/auth/login",
     },
-    secret: process.env.AUTH_SECRET,
+    secret: process.env.AUTH_SECRET || "venda_flow_default_secret_7626919b74d81",
 });
