@@ -33,6 +33,6 @@ export async function POST(request) {
 
     } catch (error) {
         console.error('Registration error:', error);
-        return NextResponse.json({ error: 'Erro ao criar conta.' }, { status: 500 });
+        return NextResponse.json({ error: 'Erro ao criar conta.', details: error.message, stack: error.stack }, { status: 500 });
     }
 }
