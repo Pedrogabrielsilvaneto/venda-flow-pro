@@ -44,7 +44,7 @@ async function startBot() {
         },
         puppeteer: {
             headless: true,
-            executablePath: '/opt/render/.cache/puppeteer/chrome/linux-133.0.6943.141/chrome-linux64/chrome',
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH, // Deixa o Render injetar a env
             args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
         }
     });
