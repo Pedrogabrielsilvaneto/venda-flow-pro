@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import Lead from '@/models/Lead';
 import Config from '@/models/Config';
 import { suggestReply } from '@/lib/ai-service';
-import { connectDB } from '@/lib/mongodb';
+import connectDB from '@/lib/mongodb';
 
 export async function POST(req, { params }) {
     try {
