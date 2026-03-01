@@ -185,98 +185,107 @@ export default function AdminConfig() {
             ))}
 
             <style jsx>{`
-                .config-page { max-width: 900px; padding-bottom: 3rem; }
-                .page-header { margin-bottom: 2rem; }
-                .page-header h1 { font-size: 1.875rem; font-weight: 800; color: #0f172a; margin: 0 0 0.5rem; }
-                .page-header p { color: #64748b; margin: 0; }
+                .config-page { max-width: 900px; padding-bottom: 3rem; margin: 0 auto; }
+                .page-header { margin-bottom: 2.5rem; }
+                .page-header h1 { font-size: 2rem; font-weight: 800; color: #0f172a; margin: 0 0 0.5rem; letter-spacing: -0.02em; }
+                .page-header p { color: #64748b; margin: 0; font-size: 1.05rem; }
 
                 .config-card {
                     background: white;
-                    border-radius: 1rem;
-                    border: 1px solid #e2e8f0;
-                    box-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
-                    margin-bottom: 1.5rem;
+                    border-radius: 1.25rem;
+                    border: 1px solid #f1f5f9;
+                    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.02);
+                    margin-bottom: 2rem;
                     overflow: hidden;
                 }
                 .card-header {
-                    padding: 1.5rem 1.5rem 0;
+                    padding: 1.5rem 1.75rem 0;
                     border-bottom: 1px solid #f1f5f9;
-                    padding-bottom: 1rem;
-                    margin-bottom: 1rem;
+                    padding-bottom: 1.25rem;
+                    margin-bottom: 1.25rem;
                 }
-                .card-header h2 { margin: 0 0 0.25rem; font-size: 1.1rem; color: #0f172a; }
-                .card-desc { margin: 0; font-size: 0.85rem; color: #64748b; }
+                .card-header h2 { margin: 0 0 0.35rem; font-size: 1.25rem; font-weight: 800; color: #0f172a; }
+                .card-desc { margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 500; }
 
                 .fields-grid {
                     display: grid;
                     grid-template-columns: 1fr 1fr;
-                    gap: 1.25rem;
-                    padding: 0 1.5rem;
+                    gap: 1.5rem;
+                    padding: 0 1.75rem;
                 }
                 .field-group { display: flex; flex-direction: column; }
                 .field-full { grid-column: 1 / -1; }
-                label { font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.35rem; }
-                .field-help { font-size: 0.78rem; color: #94a3b8; margin: 0 0 0.5rem; }
+                label { font-size: 0.875rem; font-weight: 700; color: #334155; margin-bottom: 0.35rem; }
+                .field-help { font-size: 0.8rem; color: #94a3b8; margin: 0 0 0.6rem; }
                 input, textarea, select {
-                    padding: 0.7rem 0.875rem;
-                    border: 1.5px solid #e2e8f0;
-                    border-radius: 0.6rem;
-                    font-size: 0.9rem;
+                    padding: 0.8rem 1rem;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 0.75rem;
+                    font-size: 0.95rem;
                     width: 100%;
                     box-sizing: border-box;
-                    transition: 0.2s;
+                    transition: all 0.2s;
                     font-family: inherit;
-                    background: #f8fafc;
+                    background: #fcfcfd;
+                    color: #0f172a;
                     margin: 0;
                 }
-                input:focus, textarea:focus { outline: none; border-color: #10b981; background: white; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
-                textarea { resize: vertical; }
+                input:focus, textarea:focus, select:focus { 
+                    outline: none; 
+                    border-color: #2563eb; 
+                    background: white; 
+                    box-shadow: 0 0 0 4px rgba(37,99,235,0.08); 
+                }
+                textarea { resize: vertical; min-height: 80px; }
 
                 .password-wrap { position: relative; }
                 .password-wrap input { padding-right: 3rem; }
                 .eye-btn {
-                    position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
+                    position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
                     background: none; border: none; cursor: pointer; font-size: 1.1rem;
-                    padding: 0; color: #64748b; width: auto;
+                    padding: 0; color: #94a3b8; width: auto; transition: color 0.2s;
                 }
-                .eye-btn:hover { filter: none; background: none; }
+                .eye-btn:hover { color: #0f172a; }
 
                 .card-footer {
-                    padding: 1rem 1.5rem 1.5rem;
+                    padding: 1.25rem 1.75rem;
                     display: flex;
                     align-items: center;
                     justify-content: flex-end;
-                    gap: 1rem;
-                    margin-top: 1rem;
+                    gap: 1.25rem;
+                    margin-top: 1.5rem;
                     border-top: 1px solid #f1f5f9;
+                    background: #f8fafc;
                 }
                 .saved-badge {
                     font-size: 0.875rem;
-                    color: #059669;
-                    font-weight: 600;
-                    background: #d1fae5;
-                    padding: 0.4rem 0.875rem;
+                    color: #2563eb;
+                    font-weight: 700;
+                    background: #eff6ff;
+                    padding: 0.4rem 1rem;
                     border-radius: 2rem;
                 }
                 .save-btn {
-                    background: #10b981;
+                    background: #2563eb;
                     color: white;
                     border: none;
-                    padding: 0.65rem 1.5rem;
-                    border-radius: 0.6rem;
-                    font-weight: 700;
-                    font-size: 0.9rem;
+                    padding: 0.75rem 1.75rem;
+                    border-radius: 0.75rem;
+                    font-weight: 800;
+                    font-size: 0.95rem;
                     cursor: pointer;
-                    transition: 0.2s;
+                    transition: all 0.2s;
                     width: auto;
+                    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
                 }
-                .save-btn:hover { background: #059669; }
-                .save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+                .save-btn:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3); }
+                .save-btn:active { transform: translateY(0); }
+                .save-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
                 .spinner {
                     width: 2.5rem; height: 2.5rem;
                     border: 3px solid #e2e8f0;
-                    border-top-color: #10b981;
+                    border-top-color: #2563eb;
                     border-radius: 50%;
                     animation: spin 0.8s linear infinite;
                 }

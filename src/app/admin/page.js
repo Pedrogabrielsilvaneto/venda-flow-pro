@@ -13,14 +13,14 @@ const STAGE_LABELS = {
     DONE: 'Orçamento gerado',
 };
 
-function StatCard({ label, value, growth, icon, color = 'emerald', loading }) {
+function StatCard({ label, value, growth, icon, color = 'blue', loading }) {
     const colors = {
-        emerald: { bg: 'rgba(16,185,129,0.1)', text: '#10b981', border: 'rgba(16,185,129,0.2)' },
-        indigo: { bg: 'rgba(99,102,241,0.1)', text: '#6366f1', border: 'rgba(99,102,241,0.2)' },
-        amber: { bg: 'rgba(245,158,11,0.1)', text: '#f59e0b', border: 'rgba(245,158,11,0.2)' },
-        rose: { bg: 'rgba(244,63,94,0.1)', text: '#f43f5e', border: 'rgba(244,63,94,0.2)' },
+        blue: { bg: '#eff6ff', text: '#2563eb', border: '#dbeafe' },
+        indigo: { bg: '#eef2ff', text: '#4f46e5', border: '#e0e7ff' },
+        slate: { bg: '#f8fafc', text: '#475569', border: '#f1f5f9' },
+        cyan: { bg: '#ecfeff', text: '#0891b2', border: '#cffafe' },
     };
-    const c = colors[color];
+    const c = colors[color] || colors.blue;
 
     return (
         <div className="stat-card">
@@ -43,23 +43,24 @@ function StatCard({ label, value, growth, icon, color = 'emerald', loading }) {
             <style jsx>{`
                 .stat-card {
                     background: white;
-                    border-radius: 1rem;
-                    padding: 1.5rem;
+                    border-radius: 1.25rem;
+                    padding: 1.75rem;
                     border: 1px solid #e2e8f0;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
                     display: flex;
-                    gap: 1rem;
-                    align-items: flex-start;
-                    transition: box-shadow 0.2s, transform 0.2s;
+                    gap: 1.25rem;
+                    align-items: center;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 }
                 .stat-card:hover {
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-                    transform: translateY(-2px);
+                    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);
+                    transform: translateY(-4px);
+                    border-color: #cbd5e1;
                 }
                 .stat-icon {
-                    width: 52px;
-                    height: 52px;
-                    border-radius: 0.75rem;
+                    width: 56px;
+                    height: 56px;
+                    border-radius: 1rem;
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -67,32 +68,33 @@ function StatCard({ label, value, growth, icon, color = 'emerald', loading }) {
                 }
                 .stat-body { flex: 1; }
                 .stat-label {
-                    font-size: 0.8rem;
-                    font-weight: 600;
+                    font-size: 0.75rem;
+                    font-weight: 700;
                     color: #64748b;
                     text-transform: uppercase;
-                    letter-spacing: 0.05em;
+                    letter-spacing: 0.08em;
                 }
                 .stat-value {
-                    font-size: 2rem;
+                    font-size: 1.875rem;
                     font-weight: 800;
                     color: #0f172a;
-                    margin: 0.25rem 0 0.25rem;
+                    margin: 0.1rem 0;
                     line-height: 1;
+                    letter-spacing: -0.02em;
                 }
                 .stat-growth {
                     font-size: 0.8rem;
-                    font-weight: 600;
+                    font-weight: 700;
                 }
                 .positive { color: #10b981; }
-                .negative { color: #f43f5e; }
+                .negative { color: #ef4444; }
                 .skeleton {
-                    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+                    background: linear-gradient(90deg, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%);
                     background-size: 200% 100%;
                     animation: shimmer 1.5s infinite;
                     border-radius: 0.5rem;
                 }
-                .skeleton-number { height: 2.5rem; width: 80%; margin-top: 0.25rem; }
+                .skeleton-number { height: 2rem; width: 60%; margin-top: 0.25rem; }
                 @keyframes shimmer { to { background-position: -200% 0; } }
             `}</style>
         </div>
@@ -134,7 +136,7 @@ export default function AdminDashboard() {
                     value={stats?.totalLeads ?? '-'}
                     growth={stats?.leadsGrowth}
                     icon="👥"
-                    color="emerald"
+                    color="blue"
                     loading={loading}
                 />
                 <StatCard
@@ -149,14 +151,14 @@ export default function AdminDashboard() {
                     label="Taxa de Conversão"
                     value={`${stats?.conversionRate ?? '-'}%`}
                     icon="🎯"
-                    color="amber"
+                    color="cyan"
                     loading={loading}
                 />
                 <StatCard
                     label="Atendimento Humano"
                     value={stats?.botPausedCount ?? '-'}
                     icon="🧑‍💻"
-                    color="rose"
+                    color="slate"
                     loading={loading}
                 />
             </div>
@@ -299,27 +301,30 @@ export default function AdminDashboard() {
                 .page-header {
                     display: flex;
                     justify-content: space-between;
-                    align-items: flex-start;
-                    margin-bottom: 2rem;
+                    align-items: flex-end;
+                    margin-bottom: 2.5rem;
                     flex-wrap: wrap;
                     gap: 1rem;
                 }
                 .page-header h1 {
-                    font-size: 2rem;
+                    font-size: 2.25rem;
                     font-weight: 800;
                     color: #0f172a;
                     margin: 0 0 0.25rem;
+                    letter-spacing: -0.03em;
                 }
                 .page-header p {
                     color: #64748b;
                     margin: 0;
+                    font-size: 1rem;
                 }
                 .header-date {
                     font-size: 0.875rem;
-                    color: #64748b;
-                    background: #f8fafc;
-                    padding: 0.5rem 1rem;
-                    border-radius: 0.5rem;
+                    font-weight: 600;
+                    color: #0f172a;
+                    background: white;
+                    padding: 0.625rem 1.25rem;
+                    border-radius: 0.75rem;
                     border: 1px solid #e2e8f0;
                     text-transform: capitalize;
                 }
@@ -327,8 +332,8 @@ export default function AdminDashboard() {
                 .stats-grid {
                     display: grid;
                     grid-template-columns: repeat(4, 1fr);
-                    gap: 1.25rem;
-                    margin-bottom: 2rem;
+                    gap: 1.5rem;
+                    margin-bottom: 2.5rem;
                 }
 
                 @media (max-width: 1100px) {
@@ -341,7 +346,7 @@ export default function AdminDashboard() {
                 .bottom-grid {
                     display: grid;
                     grid-template-columns: 1fr 1fr;
-                    gap: 1.5rem;
+                    gap: 2rem;
                 }
                 @media (max-width: 900px) {
                     .bottom-grid { grid-template-columns: 1fr; }
@@ -349,121 +354,129 @@ export default function AdminDashboard() {
 
                 .card {
                     background: white;
-                    border-radius: 1rem;
+                    border-radius: 1.25rem;
                     border: 1px solid #e2e8f0;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
                     overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
                 }
 
                 .card-header {
-                    padding: 1.25rem 1.5rem;
+                    padding: 1.5rem 1.75rem;
                     border-bottom: 1px solid #f1f5f9;
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
                 }
                 .card-header h2 {
-                    font-size: 1rem;
-                    font-weight: 700;
+                    font-size: 1.1rem;
+                    font-weight: 800;
                     color: #0f172a;
                     margin: 0;
+                    letter-spacing: -0.01em;
                 }
                 .view-all {
-                    font-size: 0.8rem;
-                    font-weight: 600;
-                    color: #10b981;
+                    font-size: 0.875rem;
+                    font-weight: 700;
+                    color: #2563eb;
                     text-decoration: none;
                 }
                 .view-all:hover { text-decoration: underline; }
 
-                .interactions-list { overflow-y: auto; max-height: 320px; }
+                .interactions-list { overflow-y: auto; max-height: 400px; }
 
                 .interaction-item {
                     display: flex;
-                    gap: 0.875rem;
+                    gap: 1rem;
                     align-items: center;
-                    padding: 0.875rem 1.5rem;
+                    padding: 1rem 1.75rem;
                     border-bottom: 1px solid #f8fafc;
                     cursor: pointer;
                     text-decoration: none;
-                    transition: background 0.15s;
+                    transition: all 0.2s;
                 }
                 .interaction-item:hover { background: #f8fafc; }
                 .interaction-item:last-child { border-bottom: none; }
 
                 .avatar {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    background: linear-gradient(135deg, #10b981, #059669);
+                    width: 44px;
+                    height: 44px;
+                    border-radius: 1rem;
+                    background: linear-gradient(135deg, #3b82f6, #6366f1);
                     color: white;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 0.875rem;
-                    font-weight: 700;
+                    font-size: 0.9rem;
+                    font-weight: 800;
                     flex-shrink: 0;
+                    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
                 }
                 .interaction-body { flex: 1; min-width: 0; }
                 .interaction-header {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    margin-bottom: 0.25rem;
+                    margin-bottom: 0.15rem;
                 }
                 .interaction-name {
-                    font-size: 0.9rem;
-                    font-weight: 600;
-                    color: #1e293b;
+                    font-size: 0.95rem;
+                    font-weight: 700;
+                    color: #0f172a;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
                 }
                 .interaction-time {
-                    font-size: 0.72rem;
-                    color: #94a3b8;
+                    font-size: 0.75rem;
+                    color: #64748b;
                     white-space: nowrap;
                     margin-left: 0.5rem;
                 }
                 .interaction-preview {
                     display: flex;
                     flex-direction: column;
-                    gap: 0.1rem;
+                    gap: 0.15rem;
                 }
                 .stage-tag {
-                    font-size: 0.72rem;
-                    color: #6366f1;
-                    font-weight: 600;
+                    font-size: 0.75rem;
+                    color: #2563eb;
+                    font-weight: 700;
+                    background: #eff6ff;
+                    padding: 0.1rem 0.5rem;
+                    border-radius: 2rem;
+                    width: fit-content;
                 }
                 .last-msg {
-                    font-size: 0.78rem;
-                    color: #94a3b8;
+                    font-size: 0.8rem;
+                    color: #64748b;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
                 }
 
-                .funnel-list { padding: 1.25rem 1.5rem; }
-                .funnel-item { margin-bottom: 1rem; }
+                .funnel-list { padding: 1.75rem; display: flex; flex-direction: column; gap: 1.25rem; }
+                .funnel-item { }
                 .funnel-header {
                     display: flex;
                     justify-content: space-between;
-                    margin-bottom: 0.35rem;
+                    margin-bottom: 0.5rem;
                     align-items: center;
                 }
                 .funnel-label {
-                    font-size: 0.825rem;
-                    font-weight: 600;
+                    font-size: 0.875rem;
+                    font-weight: 700;
                     color: #334155;
                 }
                 .funnel-count {
-                    font-size: 0.85rem;
-                    font-weight: 700;
+                    font-size: 0.9rem;
+                    font-weight: 800;
                     color: #0f172a;
                 }
-                .funnel-count small { color: #94a3b8; font-weight: 400; }
+                .funnel-count small { color: #64748b; font-weight: 400; font-size: 0.75rem; }
                 .funnel-bar-bg {
-                    height: 8px;
+                    height: 10px;
                     background: #f1f5f9;
                     border-radius: 999px;
                     overflow: hidden;
@@ -471,63 +484,67 @@ export default function AdminDashboard() {
                 .funnel-bar-fill {
                     height: 100%;
                     border-radius: 999px;
-                    transition: width 0.6s ease;
+                    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
                 }
 
                 .quick-actions {
-                    padding: 1.25rem 1.5rem;
+                    padding: 1.75rem;
                     border-top: 1px solid #f1f5f9;
+                    background: #fafafa;
                 }
                 .quick-actions h3 {
-                    font-size: 0.8rem;
-                    font-weight: 700;
-                    color: #94a3b8;
+                    font-size: 0.75rem;
+                    font-weight: 800;
+                    color: #64748b;
                     text-transform: uppercase;
-                    letter-spacing: 0.05em;
-                    margin: 0 0 0.75rem;
+                    letter-spacing: 0.1em;
+                    margin: 0 0 1rem;
                 }
                 .actions-grid {
                     display: grid;
                     grid-template-columns: repeat(2, 1fr);
-                    gap: 0.5rem;
+                    gap: 0.75rem;
                 }
                 .action-btn {
                     display: flex;
                     align-items: center;
-                    gap: 0.5rem;
-                    padding: 0.6rem 0.875rem;
-                    border-radius: 0.5rem;
+                    justify-content: center;
+                    gap: 0.625rem;
+                    padding: 0.75rem;
+                    border-radius: 0.875rem;
                     border: 1px solid #e2e8f0;
-                    background: #f8fafc;
-                    font-size: 0.825rem;
-                    font-weight: 600;
-                    color: #334155;
+                    background: white;
+                    font-size: 0.875rem;
+                    font-weight: 700;
+                    color: #0f172a;
                     text-decoration: none;
-                    transition: 0.2s;
+                    transition: all 0.2s;
                     cursor: pointer;
                 }
                 .action-btn:hover {
-                    background: #e0e7ff;
-                    border-color: #c7d2fe;
-                    color: #4338ca;
+                    background: #eff6ff;
+                    border-color: #2563eb;
+                    color: #2563eb;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
                 }
 
                 .empty-state {
                     text-align: center;
-                    padding: 2rem;
+                    padding: 3rem 1.5rem;
                     color: #94a3b8;
                 }
                 .empty-state p { margin: 0.25rem 0; font-size: 0.875rem; }
 
                 .skeleton {
-                    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+                    background: linear-gradient(90deg, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%);
                     background-size: 200% 100%;
                     animation: shimmer 1.5s infinite;
                     border-radius: 0.5rem;
                 }
-                .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; }
-                .skeleton-line-lg { height: 0.9rem; width: 70%; margin-bottom: 0.35rem; border-radius: 4px; }
-                .skeleton-line-sm { height: 0.75rem; width: 90%; border-radius: 4px; }
+                .skeleton-avatar { width: 44px; height: 44px; border-radius: 1rem; flex-shrink: 0; }
+                .skeleton-line-lg { height: 1rem; width: 60%; margin-bottom: 0.5rem; border-radius: 4px; }
+                .skeleton-line-sm { height: 0.8rem; width: 85%; border-radius: 4px; }
                 @keyframes shimmer { to { background-position: -200% 0; } }
             `}</style>
         </div>

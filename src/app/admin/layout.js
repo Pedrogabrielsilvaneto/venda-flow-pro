@@ -64,11 +64,13 @@ export default function AdminLayout({ children }) {
 
                 *, *::before, *::after { box-sizing: border-box; }
                 :root {
-                    --primary: #10b981;
-                    --primary-dark: #059669;
+                    --primary: #2563eb;
+                    --primary-dark: #1d4ed8;
                     --bg: #f8fafc;
-                    --text: #1e293b;
-                    --sidebar-bg: #0f172a;
+                    --text: #334155;
+                    --sidebar-bg: #ffffff;
+                    --card-bg: #ffffff;
+                    --border: #e2e8f0;
                 }
                 body {
                     margin: 0;
@@ -85,49 +87,51 @@ export default function AdminLayout({ children }) {
                 }
 
                 .admin-sidebar {
-                    width: 240px;
+                    width: 260px;
                     background: var(--sidebar-bg);
-                    color: white;
-                    padding: 1.5rem 1rem;
+                    color: var(--text);
+                    padding: 2rem 1.25rem;
                     display: flex;
                     flex-direction: column;
-                    gap: 2rem;
+                    gap: 2.5rem;
                     position: fixed;
                     top: 0;
                     left: 0;
                     height: 100vh;
                     z-index: 100;
-                    border-right: 1px solid rgba(255,255,255,0.05);
+                    border-right: 1px solid var(--border);
                 }
 
                 .admin-logo {
                     display: flex;
                     align-items: center;
-                    gap: 0.875rem;
+                    gap: 1rem;
                     padding: 0.5rem;
                 }
                 .logo-icon {
-                    font-size: 1.75rem;
-                    width: 44px;
-                    height: 44px;
+                    font-size: 1.5rem;
+                    width: 42px;
+                    height: 42px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background: rgba(16,185,129,0.15);
-                    border-radius: 0.625rem;
-                    border: 1px solid rgba(16,185,129,0.25);
+                    background: linear-gradient(135deg, #3b82f6, #6366f1);
+                    color: white;
+                    border-radius: 0.75rem;
+                    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
                 }
                 .admin-logo h1 {
-                    font-size: 1.1rem;
+                    font-size: 1.25rem;
                     font-weight: 800;
                     margin: 0;
-                    color: #10b981;
-                    line-height: 1.2;
+                    color: #0f172a;
+                    line-height: 1;
+                    letter-spacing: -0.02em;
                 }
                 .admin-logo span {
-                    font-size: 0.7rem;
-                    color: #475569;
-                    font-weight: 500;
+                    font-size: 0.75rem;
+                    color: #64748b;
+                    font-weight: 600;
                     text-transform: uppercase;
                     letter-spacing: 0.05em;
                 }
@@ -135,40 +139,42 @@ export default function AdminLayout({ children }) {
                 .admin-sidebar nav {
                     display: flex;
                     flex-direction: column;
-                    gap: 0.25rem;
+                    gap: 0.35rem;
                     flex: 1;
                 }
 
                 .nav-link {
                     display: flex;
                     align-items: center;
-                    gap: 0.75rem;
-                    padding: 0.7rem 0.875rem;
-                    border-radius: 0.625rem;
+                    gap: 0.875rem;
+                    padding: 0.75rem 1rem;
+                    border-radius: 0.75rem;
                     text-decoration: none;
                     color: #64748b;
                     font-size: 0.875rem;
                     font-weight: 500;
-                    transition: all 0.15s;
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
                 }
                 .nav-link:hover {
-                    background: rgba(255,255,255,0.06);
-                    color: #cbd5e1;
+                    background: #f1f5f9;
+                    color: #0f172a;
+                    transform: translateX(4px);
                 }
                 .nav-link.active {
-                    background: rgba(16,185,129,0.15);
-                    color: #10b981;
-                    font-weight: 600;
+                    background: #eff6ff;
+                    color: #2563eb;
+                    font-weight: 700;
                 }
-                .nav-icon { font-size: 1.1rem; width: 20px; text-align: center; }
+                .nav-icon { font-size: 1.2rem; display: flex; align-items: center; opacity: 0.8; }
+                .nav-link.active .nav-icon { opacity: 1; }
                 .nav-label { flex: 1; }
 
                 .sidebar-footer {
-                    border-top: 1px solid rgba(255,255,255,0.06);
-                    padding-top: 1rem;
+                    border-top: 1px solid var(--border);
+                    padding-top: 1.5rem;
                     display: flex;
                     flex-direction: column;
-                    gap: 0.75rem;
+                    gap: 1rem;
                 }
                 .user-info {
                     display: flex;
@@ -177,35 +183,37 @@ export default function AdminLayout({ children }) {
                     padding: 0.5rem;
                 }
                 .user-avatar {
-                    width: 36px;
-                    height: 36px;
+                    width: 40px;
+                    height: 40px;
                     border-radius: 50%;
-                    background: rgba(255,255,255,0.08);
+                    background: #f1f5f9;
+                    border: 1px solid var(--border);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 1.1rem;
+                    font-size: 1.25rem;
                     flex-shrink: 0;
+                    color: #0f172a;
                 }
                 .user-name {
-                    font-size: 0.8rem;
-                    font-weight: 600;
-                    color: #cbd5e1;
+                    font-size: 0.875rem;
+                    font-weight: 700;
+                    color: #0f172a;
                     margin: 0;
                 }
                 .user-role {
-                    font-size: 0.7rem;
-                    color: #475569;
+                    font-size: 0.75rem;
+                    color: #64748b;
                     margin: 0;
                 }
 
                 .btn-logout {
-                    background: rgba(239,68,68,0.1);
-                    color: #f87171;
-                    border: 1px solid rgba(239,68,68,0.2);
-                    padding: 0.5rem 1rem;
-                    border-radius: 0.5rem;
-                    font-size: 0.8rem;
+                    background: transparent;
+                    color: #ef4444;
+                    border: 1px solid #fee2e2;
+                    padding: 0.625rem 1rem;
+                    border-radius: 0.75rem;
+                    font-size: 0.875rem;
                     font-weight: 600;
                     cursor: pointer;
                     width: 100%;
@@ -213,52 +221,50 @@ export default function AdminLayout({ children }) {
                     text-align: center;
                 }
                 .btn-logout:hover {
-                    background: rgba(239,68,68,0.2);
-                    color: #fca5a5;
+                    background: #fef2f2;
+                    border-color: #fca5a5;
                 }
 
                 .admin-main {
                     flex: 1;
-                    margin-left: 240px;
-                    padding: 2rem;
+                    margin-left: 260px;
+                    padding: 2.5rem;
                     min-height: 100vh;
                     overflow-y: auto;
                 }
 
-                /* Global shared card style */
                 .card {
-                    background: white;
-                    padding: 1.5rem;
-                    border-radius: 1rem;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-                    border: 1px solid #e2e8f0;
+                    background: var(--card-bg);
+                    padding: 2rem;
+                    border-radius: 1.25rem;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.02), 0 8px 12px -4px rgba(0,0,0,0.02);
+                    border: 1px solid var(--border);
                 }
 
-                /* Form elements global */
                 input:not([type="checkbox"]), select, textarea {
                     width: 100%;
-                    padding: 0.7rem 0.875rem;
+                    padding: 0.75rem 1rem;
                     border: 1.5px solid #e2e8f0;
-                    border-radius: 0.5rem;
-                    font-size: 0.875rem;
+                    border-radius: 0.75rem;
+                    font-size: 0.9rem;
                     font-family: 'Inter', sans-serif;
                     background: #f8fafc;
                     color: #1e293b;
                     outline: none;
-                    transition: border-color 0.2s, box-shadow 0.2s;
+                    transition: all 0.2s;
                     box-sizing: border-box;
                 }
                 input:focus, select:focus, textarea:focus {
-                    border-color: #10b981;
+                    border-color: var(--primary);
                     background: white;
-                    box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+                    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
                 }
                 button {
                     font-family: 'Inter', sans-serif;
                     cursor: pointer;
                     transition: all 0.2s;
                 }
-                h2 { font-weight: 700; color: #0f172a; margin: 0 0 0.5rem; }
+                h2 { font-weight: 800; color: #0f172a; margin: 0 0 0.75rem; letter-spacing: -0.01em; }
             `}</style>
     </div>
   );
