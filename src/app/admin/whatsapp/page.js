@@ -7,7 +7,7 @@ export default function WhatsAppSettings() {
     const [error, setError] = useState(false);
     const [loggingOut, setLoggingOut] = useState(false);
 
-    const BOT_URL = 'http://localhost:3001'; // Ajustável se necessário
+    const BOT_URL = process.env.NEXT_PUBLIC_BOT_URL || 'http://localhost:3001';
 
     const fetchStatus = async () => {
         try {
