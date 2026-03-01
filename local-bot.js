@@ -9,6 +9,9 @@ import { onMessageReceived } from './src/lib/wwebjs-events.js';
 
 // Carregar variáveis
 dotenv.config({ path: '.env.local' });
+if (process.env.RENDER) {
+    process.env.PUPPETEER_CACHE_DIR = '/opt/render/.cache/puppeteer';
+}
 mongoose.models = {};
 
 import './src/models/Config.js';
@@ -44,7 +47,6 @@ async function startBot() {
         },
         puppeteer: {
             headless: true,
-            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH, // Deixa o Render injetar a env
             args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
         }
     });
