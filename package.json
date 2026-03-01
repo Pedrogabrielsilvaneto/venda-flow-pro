@@ -8,8 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "bot": "npx tsx local-bot.js",
-    "deploy": "vercel --prod",
-    "postinstall": "PUPPETEER_CACHE_DIR=/opt/render/.cache/puppeteer npx puppeteer browsers install chrome"
+    "deploy": "vercel --prod"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^7.0.0-rc.9",

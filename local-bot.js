@@ -8,10 +8,9 @@ import cors from 'cors';
 import { onMessageReceived } from './src/lib/wwebjs-events.js';
 
 // Carregar variáveis
+import puppeteer from 'puppeteer';
+
 dotenv.config({ path: '.env.local' });
-if (process.env.RENDER) {
-    process.env.PUPPETEER_CACHE_DIR = '/opt/render/.cache/puppeteer';
-}
 mongoose.models = {};
 
 import './src/models/Config.js';
@@ -47,7 +46,8 @@ async function startBot() {
         },
         puppeteer: {
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+            executablePath: puppeteer.executablePath(),
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
         }
     });
 

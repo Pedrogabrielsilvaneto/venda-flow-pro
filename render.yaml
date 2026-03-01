@@ -2,6 +2,6 @@ services:
   - type: web
     name: vendaflow-bot-engine
     env: node
-    buildCommand: npm install
+    buildCommand: chmod +x render-build.sh && ./render-build.sh
     startCommand: node local-bot.js
     plan: free
