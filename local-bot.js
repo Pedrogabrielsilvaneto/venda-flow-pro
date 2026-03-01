@@ -9,8 +9,15 @@ import { onMessageReceived } from './src/lib/wwebjs-events.js';
 
 // Carregar variáveis
 import puppeteer from 'puppeteer';
+import { join } from 'path';
 
 dotenv.config({ path: '.env.local' });
+
+// Se estiver no Render, sobrescreve o cache dir para buscar no projeto interno
+if (process.env.RENDER) {
+    process.env.PUPPETEER_CACHE_DIR = join(process.cwd(), '.cache', 'puppeteer');
+}
+
 mongoose.models = {};
 
 import './src/models/Config.js';
