@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+.cache
+.env.local
+mongo_tmp.txt
+url_tmp.txt
+add_env.js
+.puppeteerrc*

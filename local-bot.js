@@ -13,11 +13,6 @@ import { join } from 'path';
 
 dotenv.config({ path: '.env.local' });
 
-// Se estiver no Render, sobrescreve o cache dir para buscar no projeto interno
-if (process.env.RENDER) {
-    process.env.PUPPETEER_CACHE_DIR = join(process.cwd(), '.cache', 'puppeteer');
-}
-
 mongoose.models = {};
 
 import './src/models/Config.js';
@@ -53,7 +48,7 @@ async function startBot() {
         },
         puppeteer: {
             headless: true,
-            executablePath: puppeteer.executablePath(),
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
             args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
         }
     });
