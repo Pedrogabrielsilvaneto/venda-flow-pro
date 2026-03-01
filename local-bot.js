@@ -98,7 +98,7 @@ app.post('/api/bot/logout', async (req, res) => {
     }
 });
 
-const PORT = process.env.BOT_PORT || 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`\n🤖 Servidor do Motor do Robô rodando na porta ${PORT}`);
 });
