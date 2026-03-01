@@ -1,4 +1,4 @@
-import Config from '../models/Config';
+import Config from '../models/Config.js';
 
 /**
  * AI Service to handle interactions with Google Gemini

@@ -1,5 +1,6 @@
 import qrcode from 'qrcode';
-import { Client, LocalAuth } from 'whatsapp-web.js';
+import pkg from 'whatsapp-web.js';
+const { Client, LocalAuth } = pkg;
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import express from 'express';

@@ -1,9 +1,9 @@
 import axios from 'axios';
-import Product from '../models/Product';
-import Lead from '../models/Lead';
-import Config from '../models/Config';
-import Analysis from '../models/Analysis';
-import { generateAIResponse } from './ai-service';
+import Product from '../models/Product.js';
+import Lead from '../models/Lead.js';
+import Config from '../models/Config.js';
+import Analysis from '../models/Analysis.js';
+import { generateAIResponse } from './ai-service.js';
 
 // Get credentials from DB (with env fallback)
 async function getCredentials() {
