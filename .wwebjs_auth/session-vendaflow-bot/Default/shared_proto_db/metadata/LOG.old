@@ -1,0 +1,4 @@
+2026/02/28-21:46:40.724 7ce0 Creating DB C:\Users\Pedro Neto\.gemini\antigravity\scratch\pereira-bot-web\.wwebjs_auth\session-vendaflow-bot\Default\shared_proto_db\metadata since it was missing.
+2026/02/28-21:46:40.741 7ce0 Reusing MANIFEST C:\Users\Pedro Neto\.gemini\antigravity\scratch\pereira-bot-web\.wwebjs_auth\session-vendaflow-bot\Default\shared_proto_db\metadata/MANIFEST-000001
+2026/02/28-21:46:40.742 7ce0 Recovering log #3
+2026/02/28-21:46:40.743 7ce0 Reusing old log C:\Users\Pedro Neto\.gemini\antigravity\scratch\pereira-bot-web\.wwebjs_auth\session-vendaflow-bot\Default\shared_proto_db\metadata/000003.log 

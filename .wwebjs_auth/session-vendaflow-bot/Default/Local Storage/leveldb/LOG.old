@@ -1,0 +1,4 @@
+2026/02/28-21:46:40.805 e08 Creating DB C:\Users\Pedro Neto\.gemini\antigravity\scratch\pereira-bot-web\.wwebjs_auth\session-vendaflow-bot\Default\Local Storage\leveldb since it was missing.
+2026/02/28-21:46:40.951 e08 Reusing MANIFEST C:\Users\Pedro Neto\.gemini\antigravity\scratch\pereira-bot-web\.wwebjs_auth\session-vendaflow-bot\Default\Local Storage\leveldb/MANIFEST-000001
+2026/02/28-21:46:40.960 e08 Recovering log #3
+2026/02/28-21:46:40.983 e08 Reusing old log C:\Users\Pedro Neto\.gemini\antigravity\scratch\pereira-bot-web\.wwebjs_auth\session-vendaflow-bot\Default\Local Storage\leveldb/000003.log 

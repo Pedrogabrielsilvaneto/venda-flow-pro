@@ -1,0 +1,6 @@
+2026/02/28-21:46:42.801 1820 Creating DB C:\Users\Pedro Neto\.gemini\antigravity\scratch\pereira-bot-web\.wwebjs_auth\session-vendaflow-bot\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb since it was missing.
+2026/02/28-21:46:42.811 1820 Reusing MANIFEST C:\Users\Pedro Neto\.gemini\antigravity\scratch\pereira-bot-web\.wwebjs_auth\session-vendaflow-bot\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/02/28-21:46:42.811 1820 Recovering log #121
+2026/02/28-21:46:42.818 1820 Reusing old log C:\Users\Pedro Neto\.gemini\antigravity\scratch\pereira-bot-web\.wwebjs_auth\session-vendaflow-bot\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000121.log 
+2026/02/28-21:46:42.819 1820 Delete type=2 #120
+2026/02/28-21:46:42.819 1820 Delete type=2 #123
