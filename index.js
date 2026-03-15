@@ -7,6 +7,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
+const FileStore = require('session-file-store')(session);
 
 const { processarMensagem, getAllConversas, conversas } = require('./src/conversationFlow');
 const { getConfig, saveConfig } = require('./src/aiSettings');
@@ -25,18 +26,29 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
-// Sessões
+// Sessões Persistentes
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'secret-key',
+    store: new FileStore({
+        path: './sessions',
+        logFn: function() {} // Silencia logs de debug
+    }),
+    secret: process.env.SESSION_SECRET || 'pereira-secret',
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 horas
+    cookie: { 
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
+        secure: false // true se usar HTTPS
+    }
 }));
 
 // Middleware de Autenticação
 function authMiddleware(req, res, next) {
     if (req.session.authenticated) {
         return next();
+    }
+    // Para chamadas de API, retornamos 401 em vez de redirecionar
+    if (req.path.startsWith('/api/')) {
+        return res.status(401).json({ error: 'Sessão expirada. Faça login novamente.' });
     }
     res.redirect('/login');
 }
