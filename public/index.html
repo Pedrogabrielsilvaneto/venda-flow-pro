@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pereira Acabamentos — Painel de Atendimento</title>
+  <meta name="description" content="Painel administrativo de atendimento ao cliente - Pereira Acabamentos" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ========== SIDEBAR ========== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">PA</div>
+        <div class="logo-text">
+          <h1>Pereira</h1>
+          <span>Acabamentos</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-section="dashboard" id="nav-dashboard">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        Dashboard
+      </a>
+      <a href="#" class="nav-item" data-section="atendimentos" id="nav-atendimentos">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        Atendimentos
+        <span class="badge" id="badge-atendimentos">0</span>
+      </a>
+      <!-- Admin-only items -->
+      <a href="#" class="nav-item nav-admin-only" data-section="equipe" id="nav-equipe">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        Equipe
+      </a>
+      <a href="#" class="nav-item nav-admin-only" data-section="config-ia" id="nav-config-ia">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        Config. da IA
+      </a>
+      <div class="nav-divider"></div>
+      <a href="#" class="nav-item" data-section="conexao" id="nav-conexao">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path>
+        </svg>
+        Conexão WhatsApp
+        <span class="status-dot" id="status-dot"></span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-profile" id="user-profile">
+        <div class="user-avatar" id="user-avatar">A</div>
+        <div class="user-info">
+          <span class="user-name" id="user-name">Admin</span>
+          <span class="user-role" id="user-role">Administrador</span>
+        </div>
+        <button class="logout-btn" id="btn-logout" title="Sair">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========== MAIN CONTENT ========== -->
+  <main class="main-content">
+    <!-- Header -->
+    <header class="top-header">
+      <div class="header-left">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <h2 id="page-title">Dashboard</h2>
+      </div>
+      <div class="header-right">
+        <div class="connection-status" id="connection-badge">
+          <span class="status-dot-small" id="header-status-dot"></span>
+          <span id="header-status-text">Desconectado</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== DASHBOARD SECTION ===== -->
+    <section class="content-section active" id="section-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card" id="stat-total">
+          <div class="stat-icon purple">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Total de Interações</span>
+            <span class="stat-value" id="stat-total-value">0</span>
+          </div>
+        </div>
+        <div class="stat-card" id="stat-today">
+          <div class="stat-icon green">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Atividade (24h)</span>
+            <span class="stat-value" id="stat-today-value">0</span>
+          </div>
+        </div>
+        <div class="stat-card" id="stat-fila">
+          <div class="stat-icon orange">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Na fila de espera</span>
+            <span class="stat-value" id="stat-fila-value">0</span>
+          </div>
+        </div>
+        <div class="stat-card" id="stat-rate">
+          <div class="stat-icon blue">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Taxa de Resolução IA</span>
+            <span class="stat-value" id="stat-rate-value">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-time AI Activity -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <h3>🌩️ Fluxo de IA em Tempo Real</h3>
+            <span class="panel-subtitle">Monitoramento de conversas ativas via Agente Virtual</span>
+          </div>
+          <div class="live-indicator">
+            <span class="pulse-dot"></span>
+            LIVE
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="activity-list" id="activity-list">
+            <div class="empty-state">
+              <div class="empty-icon">🤖</div>
+              <p>Aguardando interações...</p>
+              <span>O Agente Virtual está pronto para processar novas mensagens.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ATENDIMENTOS SECTION ===== -->
+    <section class="content-section" id="section-atendimentos">
+      <!-- Tabs -->
+      <div class="atendimento-tabs" id="atendimento-tabs">
+        <button class="tab-btn active" data-tab="fila" id="tab-fila">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          Aguardando (Fila)
+          <span class="tab-badge" id="tab-badge-fila">0</span>
+        </button>
+        <button class="tab-btn" data-tab="meus" id="tab-meus">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          Meus Atendimentos
+          <span class="tab-badge" id="tab-badge-meus">0</span>
+        </button>
+        <button class="tab-btn tab-admin-only" data-tab="supervisao" id="tab-supervisao">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          Supervisão (IA)
+          <span class="tab-badge" id="tab-badge-supervisao">0</span>
+        </button>
+        <button class="tab-btn" data-tab="finalizados" id="tab-finalizados">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          Finalizados
+        </button>
+      </div>
+
+      <!-- Chat Container: List + Chat Area -->
+      <div class="chat-container" id="chat-container">
+        <!-- Contact List -->
+        <div class="contact-list-panel" id="contact-list-panel">
+          <div class="contact-search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" placeholder="Buscar atendimento..." id="search-contacts" />
+          </div>
+          <div class="contact-list" id="contact-list">
+            <!-- Contacts are injected dynamically -->
+            <div class="empty-contacts">
+              <span>📋</span>
+              <p>Nenhum atendimento nesta aba</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area" id="chat-area">
+          <!-- Placeholder when no chat is selected -->
+          <div class="chat-placeholder" id="chat-placeholder">
+            <div class="ai-orb"></div>
+            <h3>Selecione um atendimento</h3>
+            <p>Escolha uma conversa na lista ao lado para visualizar e interagir.</p>
+          </div>
+
+          <!-- Active Chat View -->
+          <div class="chat-active hidden" id="chat-active">
+            <!-- Chat Header -->
+            <div class="chat-header" id="chat-header">
+              <div class="chat-header-info">
+                <div class="chat-avatar" id="chat-avatar">?</div>
+                <div class="chat-header-text">
+                  <h4 id="chat-customer-name">Cliente</h4>
+                  <span class="chat-status-badge" id="chat-status-badge">Atendimento IA</span>
+                </div>
+              </div>
+              <div class="chat-header-actions">
+                <button class="action-btn action-transfer" id="btn-transfer" title="Transferir Atendimento">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 14 20 9 15 4"></polyline>
+                    <path d="M4 20v-7a4 4 0 0 1 4-4h12"></path>
+                  </svg>
+                  Transferir
+                </button>
+                <!-- Admin Only: Takeover Button -->
+                <button class="action-btn action-takeover admin-only-btn" id="btn-takeover" title="Assumir Chat (Intervenção)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  </svg>
+                  Intervir
+                </button>
+                <button class="action-btn action-close" id="btn-close-chat" title="Finalizar Atendimento">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                  Finalizar
+                </button>
+              </div>
+            </div>
+
+            <!-- Messages Area -->
+            <div class="chat-messages" id="chat-messages">
+              <!-- Messages are injected dynamically -->
+            </div>
+
+            <!-- Typing Bar -->
+            <div class="chat-input-bar" id="chat-input-bar">
+              <div class="signature-preview" id="signature-preview">
+                <span class="sig-icon">✍️</span>
+                <span id="sig-text">*Admin (Gerente):*</span>
+              </div>
+              <div class="input-row">
+                <textarea 
+                  id="chat-input" 
+                  placeholder="Digite sua mensagem..." 
+                  rows="1"
+                  maxlength="4096"
+                ></textarea>
+                <button class="send-btn" id="btn-send" title="Enviar mensagem">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== EQUIPE SECTION (Admin only) ===== -->
+    <section class="content-section" id="section-equipe">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <h3>👥 Gestão de Equipe</h3>
+            <span class="panel-subtitle">Gerencie os usuários e permissões do sistema</span>
+          </div>
+          <button class="btn-primary" id="btn-add-user">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Novo Usuário
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class="team-grid" id="team-grid">
+            <!-- Example team member cards will be populated here -->
+            <div class="team-card">
+              <div class="team-avatar admin-avatar">A</div>
+              <div class="team-info">
+                <h4>Admin</h4>
+                <span class="role-badge role-admin">Administrador</span>
+              </div>
+              <div class="team-stats">
+                <span>Ativo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CONFIG IA SECTION (Admin only) ===== -->
+    <section class="content-section" id="section-config-ia">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <h3>🤖 Configurações da IA</h3>
+            <span class="panel-subtitle">Ajuste o comportamento do Agente Virtual Beatriz</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="config-form">
+            <div class="config-group">
+              <label for="ia-prompt">Prompt do Sistema (System Instruction)</label>
+              <textarea id="ia-prompt" class="config-textarea" rows="12" placeholder="Cole aqui o prompt mestre da IA..."></textarea>
+            </div>
+            <div class="config-row">
+              <div class="config-group">
+                <label for="ia-temperature">Temperatura</label>
+                <input type="range" id="ia-temperature" min="0" max="1" step="0.1" value="0.8" />
+                <span class="range-value" id="temp-value">0.8</span>
+              </div>
+              <div class="config-group">
+                <label for="ia-max-tokens">Max Tokens</label>
+                <input type="number" id="ia-max-tokens" value="1000" min="100" max="4000" />
+              </div>
+            </div>
+            <button class="btn-primary" id="btn-save-ia-config">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              Salvar Configuração
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CONEXAO SECTION ===== -->
+    <section class="content-section" id="section-conexao">
+      <div class="conexao-container">
+        <div class="panel conexao-panel">
+          <div class="panel-header">
+            <h3>📲 Integração WhatsApp</h3>
+            <span class="panel-subtitle">Sincronize o cérebro da IA com seu número business</span>
+          </div>
+          <div class="panel-body conexao-body">
+            <div class="conexao-state" id="state-disconnected">
+              <div class="qr-placeholder">
+                <div class="loading-spinner"></div>
+                <h4>Preparando Gateway...</h4>
+                <p>O cérebro virtual está iniciando os protocolos de conexão.</p>
+              </div>
+            </div>
+            <div class="conexao-state hidden" id="state-qr">
+              <div class="qr-container">
+                <h4>🔐 Autenticação Segura</h4>
+                <p>Escaneie o código abaixo para autorizar o Agente Virtual.</p>
+                <div class="qr-code" id="qr-code-display"></div>
+                <div class="qr-tip">
+                  💡 <strong>Dica Premium:</strong> Mantenha o celular conectado à internet para melhor performance.
+                </div>
+              </div>
+            </div>
+            <div class="conexao-state hidden" id="state-connected">
+              <div class="connected-container">
+                <div class="success-glow">
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                </div>
+                <h4>Sistema Online & Operacional</h4>
+                <p>A IA da Pereira Acabamentos está ativa e qualificando leads.</p>
+                <div class="connected-stats">
+                  <div class="connected-stat">
+                    <span class="cs-label">Motor IA</span>
+                    <span class="cs-value online">Ativo</span>
+                  </div>
+                  <div class="connected-stat">
+                    <span class="cs-label">Leads em Fila</span>
+                    <span class="cs-value" id="connected-conversas">0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========== TRANSFER MODAL ========== -->
+  <div class="modal-overlay hidden" id="modal-transfer">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>🔄 Transferir Atendimento</h3>
+        <button class="modal-close" id="modal-transfer-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Selecione o vendedor para receber este atendimento:</p>
+        <div class="agent-list" id="agent-list">
+          <!-- Agent cards injected here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== TOAST CONTAINER ========== -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
