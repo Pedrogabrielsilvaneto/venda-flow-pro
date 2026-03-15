@@ -119,38 +119,55 @@ async function connectToWhatsApp() {
         }
     });
 
+    // Controle de processamento por usuário para evitar loops e múltiplas chamadas simultâneas
+    const userProcessingState = new Map();
+
     // ============ MENSAGENS RECEBIDAS ============
     socket.ev.on('messages.upsert', async (m) => {
+        const msg = m.messages[0];
+        if (!msg.message || msg.key.fromMe) return;
+
+        const numero = msg.key.remoteJid;
+        
+        // Ignorar grupos
+        if (isJidGroup(numero) || numero.includes('@g.us')) return;
+
+        // Pega texto normal ou texto de mensagem com botões/mídia
+        const texto = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
+        if (!texto) return;
+
+        // Inicializa estado se não existir
+        if (!userProcessingState.has(numero)) {
+            userProcessingState.set(numero, { isProcessing: false });
+        }
+        const state = userProcessingState.get(numero);
+
+        // SE O BOT JÁ ESTÁ PENSANDO: Retorna e não faz nada para evitar inundação/loops
+        if (state.isProcessing) {
+            console.log(`⏳ Já processando para ${numero}. Ignorando entrada: "${texto}"`);
+            return;
+        }
+
+        console.log(`📩 Mensagem de ${numero}: ${texto}`);
+
         try {
-            const msg = m.messages[0];
-            if (!msg.message || msg.key.fromMe) return;
+            // Ativa a trava
+            state.isProcessing = true;
 
-            const numero = msg.key.remoteJid;
-            // Ignorar grupos
-            if (isJidGroup(numero) || numero.includes('@g.us')) return;
-
-            // Pega texto normal ou texto de mensagem com botões/mídia (se houver transcrição)
-            const texto = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
-            if (!texto) return;
-
-            console.log(`📩 Mensagem de ${numero}: ${texto}`);
-
-            // Enviar indicativo de "digitando..." para dar efeito mais humanizado
+            // Enviar indicativo de "digitando..."
             await socket.presenceSubscribe(numero);
             await socket.sendPresenceUpdate('composing', numero);
 
             const respostas = await processarMensagem(numero, texto);
 
             for (let i = 0; i < respostas.length; i++) {
-                // Delay artificial humano: mínimo 2s, máximo 5s, dependendo do tamanho do texto
+                // Delay artificial humano
                 const delay = Math.min(Math.max(respostas[i].length * 20 + (Math.random() * 1000), 2000), 5000);
                 await new Promise((resolve) => setTimeout(resolve, delay));
                 
-                // Envia a resposta individual
                 await socket.sendMessage(numero, { text: respostas[i] });
                 console.log(`📤 Resposta enviada para ${numero}`);
                 
-                // Emite "digitando" para a próxima, se houver
                 if (i < respostas.length - 1) {
                     await socket.sendPresenceUpdate('composing', numero);
                 }
@@ -167,8 +184,16 @@ async function connectToWhatsApp() {
             });
 
             io.emit('conversas_update', getAllConversas());
+
         } catch (error) {
-            console.error('Erro ao processar mensagem Baileys:', error);
+            console.error('❌ Erro no processamento principal:', error);
+            // Mensagem de segurança caso tudo falhe no fluxo
+            await socket.sendMessage(numero, { 
+                text: "Puxa, tive um pequeno probleminha aqui! 😅 Poderia me enviar a mensagem novamente, por favor?" 
+            });
+        } finally {
+            // DESBLOQUEIA SEMPRE no final para permitir novas mensagens
+            state.isProcessing = false;
         }
     });
 }
