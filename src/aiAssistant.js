@@ -137,10 +137,12 @@ async function generateAIResponse(conversa, userMessage) {
 
         return responseText;
     } catch (error) {
-        console.error('❌ Erro Técnico Gemini:', error.message);
+        const errorMessage = error.message || '';
+        console.error('❌ Erro Técnico Gemini:', errorMessage);
 
-        if (error.message.includes('429') || error.message.includes('quota') || error.message.includes('Too Many Requests')) {
-            return `Puxa, estou recebendo muitas mensagens ao mesmo tempo e meu sistema deu uma pequena travadinha! 😅\n\nPoderia aguardar só um minutinho e me reenviar a mensagem? 🙏`;
+        if (errorMessage.includes('429') || errorMessage.includes('quota') || errorMessage.includes('Too Many Requests')) {
+            console.warn('⚠️ Limite de cota (429) atingido no Gemini. Sugerindo espera ao usuário.');
+            return `Puxa, estou recebendo muitas mensagens agora e meu sistema deu uma pequena pausinha para respirar! 😅\n\nPoderia me enviar sua mensagem novamente em uns 30 segundos? 🙏`;
         }
 
         return getFallbackResponse(conversa);
