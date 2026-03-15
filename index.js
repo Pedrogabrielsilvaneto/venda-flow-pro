@@ -197,6 +197,24 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('finalize_chat', async (data) => {
+        const { whatsappJid } = data;
+        const conversa = conversas.get(whatsappJid);
+
+        if (conversa && conversa.status !== 'FINALIZADO') {
+            conversa.status = 'FINALIZADO';
+            conversa.closedAt = new Date();
+            
+            conversa.historico.push({
+                remetente: 'system',
+                texto: `✅ Atendimento finalizado.`,
+                timestamp: new Date()
+            });
+
+            io.emit('conversas_update', getAllConversas());
+        }
+    });
+
     socket.on('disconnect', () => {
         console.log('🖥️  Dashboard desconectado');
     });

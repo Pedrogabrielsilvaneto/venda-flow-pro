@@ -280,21 +280,8 @@ function initChatActions() {
   $('btn-close-chat').addEventListener('click', () => {
     if (!selectedChatId) return;
     const chat = allChats.find(c => c.id === selectedChatId);
-    if (chat) {
-      chat.status = 'FINALIZADO';
-      chat.closedAt = new Date().toISOString();
-      
-      chat.messages.push({
-        id: genId(),
-        sender: 'SYSTEM',
-        content: `✅ Atendimento finalizado por ${currentUser.name}.`,
-        timestamp: new Date().toISOString(),
-      });
-      
-      showToast('success', 'Atendimento finalizado com sucesso.');
-      renderContactList();
-      renderChatMessages(chat);
-      updateBadges();
+    if (chat && chat.status !== 'FINALIZADO') {
+      socket.emit('finalize_chat', { whatsappJid: chat.whatsappJid });
     }
   });
   
@@ -522,7 +509,9 @@ function renderChatMessages(chat) {
   }).join('');
   
   // Scroll to bottom
-  container.scrollTop = container.scrollHeight;
+  requestAnimationFrame(() => {
+    container.scrollTop = container.scrollHeight;
+  });
 }
 
 // ============ SENDER INFO ============
@@ -670,22 +659,22 @@ function updateConnectionUI(status) {
   switch (status) {
     case 'connected':
       headerDot.classList.add('online');
-      headerText.textContent = 'Conectado';
+      headerText.textContent = '';
       if ($('state-connected')) $('state-connected').classList.remove('hidden');
       break;
     case 'qr_ready':
       headerDot.classList.add('waiting');
-      headerText.textContent = 'Aguardando QR';
+      headerText.textContent = 'QR Ready';
       if ($('state-qr')) $('state-qr').classList.remove('hidden');
       break;
     case 'offline':
     case 'disconnected':
       headerDot.classList.add('offline');
-      headerText.textContent = 'Desconectado';
+      headerText.textContent = 'Off';
       if ($('state-disconnected')) $('state-disconnected').classList.remove('hidden');
       break;
     default:
-      headerText.textContent = 'Carregando...';
+      headerText.textContent = '';
   }
 }
 

@@ -17,13 +17,12 @@
   <!-- ========== TOP HEADER (NAVBAR) ========== -->
   <header class="main-header">
     <div class="header-left">
-      <div class="connection-status" id="connection-badge">
-        <span class="status-dot-small online" id="header-status-dot"></span>
-        <span id="header-status-text">Conectado</span>
-      </div>
-      <div class="header-user-info">
-        <span class="header-user-name" id="user-name">Carregando...</span>
-        <span class="header-user-role" id="user-role"></span>
+      <div class="logo">
+        <div class="logo-icon">PA</div>
+        <div class="logo-text">
+          <h1>Pereira</h1>
+          <span>Acabamentos</span>
+        </div>
       </div>
     </div>
 
@@ -47,12 +46,13 @@
     </nav>
 
     <div class="header-right">
-      <div class="logo">
-        <div class="logo-icon">PA</div>
-        <div class="logo-text">
-          <h1>Pereira</h1>
-          <span>Acabamentos</span>
-        </div>
+      <div class="connection-status" id="connection-badge" title="Status de Conexão">
+        <span class="status-dot-small online" id="header-status-dot"></span>
+        <span id="header-status-text"></span>
+      </div>
+      <div class="header-user-info">
+        <span class="header-user-name" id="user-name">Carregando...</span>
+        <span class="header-user-role" id="user-role"></span>
       </div>
       <button class="logout-btn-header" id="btn-logout-header" title="Sair">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
