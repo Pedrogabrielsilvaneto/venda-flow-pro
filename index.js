@@ -9,6 +9,7 @@ const path = require('path');
 const session = require('express-session');
 
 const { processarMensagem, getAllConversas, conversas } = require('./src/conversationFlow');
+const { getConfig, saveConfig } = require('./src/aiSettings');
 
 // ============ CONFIGURAÇÕES ============
 const PORT = process.env.PORT || 3000;
@@ -59,6 +60,17 @@ app.post('/api/login', (req, res) => {
 app.get('/api/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/login');
+});
+
+// ============ ROTAS DA IA ============
+app.get('/api/settings', authMiddleware, (req, res) => {
+    res.json(getConfig());
+});
+
+app.post('/api/settings', authMiddleware, (req, res) => {
+    const { botName, systemPrompt } = req.body;
+    saveConfig({ botName, systemPrompt });
+    res.json({ success: true });
 });
 
 // Proteger arquivos estáticos (exceto login e css)

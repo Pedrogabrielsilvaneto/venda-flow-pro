@@ -370,13 +370,8 @@
             </div>
             <div class="config-row">
               <div class="config-group">
-                <label for="ia-temperature">Temperatura</label>
-                <input type="range" id="ia-temperature" min="0" max="1" step="0.1" value="0.8" />
-                <span class="range-value" id="temp-value">0.8</span>
-              </div>
-              <div class="config-group">
-                <label for="ia-max-tokens">Max Tokens</label>
-                <input type="number" id="ia-max-tokens" value="1000" min="100" max="4000" />
+                <label for="ia-name">Nome da Assistente (Bot)</label>
+                <input type="text" id="ia-name" class="config-text-input" placeholder="Ex: Beatriz" style="width: 100%; border: 1px solid var(--border-light); border-radius: 8px; padding: 0.8rem; font-size: 0.95rem;" />
               </div>
             </div>
             <button class="btn-primary" id="btn-save-ia-config">

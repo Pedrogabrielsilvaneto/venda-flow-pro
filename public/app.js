@@ -716,20 +716,43 @@ function renderActivityList() {
 }
 
 // ============ MISC UI ============
-function initMiscUI() {
-  // Temperature slider
-  const tempSlider = $('ia-temperature');
-  if (tempSlider) {
-    tempSlider.addEventListener('input', () => {
-      $('temp-value').textContent = tempSlider.value;
-    });
+async function initMiscUI() {
+  // Carrega configurações da IA
+  try {
+    const res = await fetch('/api/settings');
+    if (res.ok) {
+      const data = await res.json();
+      const nameInput = $('ia-name');
+      const promptInput = $('ia-prompt');
+      if (nameInput) nameInput.value = data.botName || '';
+      if (promptInput) promptInput.value = data.systemPrompt || '';
+    }
+  } catch (e) {
+    console.error("Failed to fetch settings:", e);
   }
-  
+
   // Save IA config button
   const saveBtn = $('btn-save-ia-config');
   if (saveBtn) {
-    saveBtn.addEventListener('click', () => {
-      showToast('success', 'Configuração da IA salva com sucesso!');
+    saveBtn.addEventListener('click', async () => {
+      const botName = $('ia-name').value;
+      const systemPrompt = $('ia-prompt').value;
+      
+      try {
+        const response = await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ botName, systemPrompt })
+        });
+        
+        if (response.ok) {
+            showToast('success', 'Configuração da IA salva com sucesso!');
+        } else {
+            showToast('error', 'Erro ao salvar configuração.');
+        }
+      } catch (e) {
+          showToast('error', 'Erro de conexão.');
+      }
     });
   }
 }
