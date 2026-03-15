@@ -76,10 +76,15 @@ async function processarMensagem(numero, mensagem) {
     // Gerar resposta inteligente via Agente Virtual
     const respostaIA = await generateAIResponse(conversa, texto);
     
-    const respostas = [respostaIA];
-    respostas.forEach((r) => registrarMensagem(conversa, 'bot', r));
+    // Só registra no histórico se NÃO for a mensagem de erro/cota
+    const isErrorMessage = respostaIA.includes("pequena pausinha para respirar") || 
+                           respostaIA.includes("probleminha técnico");
+                           
+    if (!isErrorMessage) {
+        registrarMensagem(conversa, 'bot', respostaIA);
+    }
     
-    return respostas;
+    return [respostaIA];
 }
 
 // ================ HANDLERS ================

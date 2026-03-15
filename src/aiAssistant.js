@@ -59,8 +59,18 @@ const safetySettings = [
     { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
 ];
 
+let lastQuotaErrorTimestamp = 0;
+const QUOTA_COOLDOWN_MS = 30000; // 30 segundos de pausa real
+
 async function generateAIResponse(conversa, userMessage) {
     if (!genAI) return getFallbackResponse(conversa);
+
+    // Verifica se estamos em cooldown global de cota
+    const now = Date.now();
+    if (now - lastQuotaErrorTimestamp < QUOTA_COOLDOWN_MS) {
+        console.warn(`⏳ Pulando chamada Gemini devido a cooldown global (${Math.round((QUOTA_COOLDOWN_MS - (now - lastQuotaErrorTimestamp))/1000)}s restantes)`);
+        return `Puxa, estou recebendo muitas mensagens agora e meu sistema deu uma pequena pausinha para respirar! 😅\n\nPoderia me enviar sua mensagem novamente em uns 30 segundos? 🙏`;
+    }
 
     try {
         const model = genAI.getGenerativeModel({
@@ -141,7 +151,8 @@ async function generateAIResponse(conversa, userMessage) {
         console.error('❌ Erro Técnico Gemini:', errorMessage);
 
         if (errorMessage.includes('429') || errorMessage.includes('quota') || errorMessage.includes('Too Many Requests')) {
-            console.warn('⚠️ Limite de cota (429) atingido no Gemini. Sugerindo espera ao usuário.');
+            console.warn('⚠️ Limite de cota (429) atingido no Gemini. Ativando cooldown global.');
+            lastQuotaErrorTimestamp = Date.now(); // Ativa o cooldown
             return `Puxa, estou recebendo muitas mensagens agora e meu sistema deu uma pequena pausinha para respirar! 😅\n\nPoderia me enviar sua mensagem novamente em uns 30 segundos? 🙏`;
         }
 
