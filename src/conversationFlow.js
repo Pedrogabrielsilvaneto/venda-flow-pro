@@ -35,6 +35,8 @@ function getConversa(numero) {
             email: null,
             interesse: null,
             categoriaAtual: null,
+            status: 'ATENDIMENTO_IA', // Status inicial: IA no comando
+            assignedAgentId: null,      // ID do vendedor ou admin
             produtosExibidos: [],
             historico: [],
             criadoEm: new Date(),
@@ -66,6 +68,12 @@ async function processarMensagem(numero, mensagem) {
     const texto = mensagem.trim();
 
     registrarMensagem(conversa, 'cliente', texto);
+
+    // Se a conversa NÃO está com a IA, não processamos resposta automática
+    if (conversa.status !== 'ATENDIMENTO_IA') {
+        console.log(`🤖 IA Silenciada para ${numero} (Status: ${conversa.status})`);
+        return []; 
+    }
 
     // Comandos de sistema continuam rápidos
     if (texto.toLowerCase() === '/reiniciar' || texto.toLowerCase() === '/reset') {

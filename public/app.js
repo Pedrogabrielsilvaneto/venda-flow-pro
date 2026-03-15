@@ -12,13 +12,10 @@
 // ============ GLOBALS ============
 const socket = io();
 
-// Simulated current user (in production, fetched from backend session)
-let currentUser = {
-  id: 'admin-001',
-  name: 'Admin',
-  role: 'ADMIN', // 'ADMIN' or 'VENDEDOR'
-  signature: 'Admin',
-};
+// Fetched from backend session
+let currentUser = null;
+let teamUsers = [];
+let aiSettings = {}; // Configurações da IA (nome, prompt)
 
 // State
 let allChats = [];
@@ -32,15 +29,118 @@ const $ = (id) => document.getElementById(id);
 const $$ = (sel) => document.querySelectorAll(sel);
 
 // ============ INITIALIZATION ============
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const res = await fetch('/api/me');
+    if (!res.ok) throw new Error('Not logged in');
+    currentUser = await res.json();
+  } catch(e) {
+    window.location.href = '/login';
+    return;
+  }
+  
+  await fetchTeamMembers();
+
   initNavigation();
   initTabs();
   initChatActions();
+  initTeamActions();
   initRBAC();
   initSocket();
-  loadMockData();
+  loadMockData(); // Carrega contatos se existirem mockados
+  
+  // Carrega atendimentos reais
+  await fetchConversas();
+
   initMiscUI();
 });
+
+async function fetchConversas() {
+  try {
+    const res = await fetch('/api/conversas');
+    if (res.ok) {
+        const data = await res.json();
+        updateFromSocket(data);
+    }
+  } catch(e) {}
+}
+
+async function fetchTeamMembers() {
+  if (currentUser.role !== 'ADMIN') return;
+  try {
+    const res = await fetch('/api/users');
+    if (res.ok) {
+      teamUsers = await res.json();
+      renderTeamGrid();
+    }
+  } catch(e) {}
+}
+
+function initTeamActions() {
+  const btnAdd = $('btn-add-user');
+  if (btnAdd) {
+    btnAdd.addEventListener('click', () => {
+      $('modal-user').classList.remove('hidden');
+    });
+  }
+
+  const btnClose = $('modal-user-close');
+  if (btnClose) {
+    btnClose.addEventListener('click', () => {
+      $('modal-user').classList.add('hidden');
+    });
+  }
+
+  const btnSaveModal = $('btn-save-user');
+  if (btnSaveModal) {
+    btnSaveModal.addEventListener('click', async () => {
+      const name = $('new-user-name').value;
+      const username = $('new-user-username').value;
+      const password = $('new-user-password').value;
+      const role = $('new-user-role').value;
+      const signature = $('new-user-signature').value;
+
+      try {
+        const res = await fetch('/api/users', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ name, username, password, role, signature })
+        });
+        if (res.ok) {
+          showToast('success', 'Usuário criado com sucesso!');
+          $('modal-user').classList.add('hidden');
+          fetchTeamMembers();
+        } else {
+          showToast('error', 'Erro ao criar usuário.');
+        }
+      } catch(e){
+        showToast('error', 'Falha na conexão.');
+      }
+    });
+  }
+}
+
+function renderTeamGrid() {
+  const grid = $('team-grid');
+  if (!grid) return;
+  
+  grid.innerHTML = teamUsers.map(user => {
+    const roleClass = user.role === 'ADMIN' ? 'role-admin' : 'role-agent';
+    const roleText = user.role === 'ADMIN' ? 'Administrador' : 'Vendedor';
+    return `
+      <div class="team-card">
+        <div class="team-avatar admin-avatar">${user.name.charAt(0)}</div>
+        <div class="team-info">
+          <h4>${user.name}</h4>
+          <span class="role-badge ${roleClass}">${roleText}</span>
+        </div>
+        <div class="team-stats">
+          <span>${user.active ? 'Ativo' : 'Inativo'}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
 // ============ RBAC VISIBILITY ============
 function initRBAC() {
@@ -434,23 +534,37 @@ function getSenderInfo(msg) {
     case 'CUSTOMER':
       return { icon: '👤', label: 'Cliente', senderClass: 'sender-customer' };
     case 'AI':
-      return { icon: '🤖', label: 'Beatriz (IA)', senderClass: 'sender-ai' };
+      const name = aiSettings.botName || 'Beatriz';
+      return { icon: '🤖', label: name + ' (IA)', senderClass: 'sender-ai' };
     case 'AGENT':
-      return { icon: '👨‍💼', label: msg.agentName || 'Atendente', senderClass: 'sender-agent' };
+      const agent = teamUsers.find(u => u.id === msg.agentId);
+      const label = agent ? agent.name : (msg.agentName || 'Atendente');
+      return { icon: '👨‍💼', label: label, senderClass: 'sender-agent' };
     default:
       return { icon: 'ℹ️', label: 'Sistema', senderClass: '' };
   }
 }
 
 // ============ RENDER AGENT LIST (Modal) ============
-function renderAgentList() {
+async function renderAgentList() {
   const list = $('agent-list');
-  // Mock agents - in production from API
-  const agents = [
-    { id: 'v1', name: 'João Silva', role: 'VENDEDOR', signature: 'João' },
-    { id: 'v2', name: 'Maria Santos', role: 'VENDEDOR', signature: 'Maria' },
-    { id: 'v3', name: 'Pedro Costa', role: 'VENDEDOR', signature: 'Pedro' },
-  ];
+  // Se for adm já baixou a teamUsers, se for vendedor pode não ter baixado
+  let agents = teamUsers;
+  
+  if (agents.length === 0) {
+    try {
+      const res = await fetch('/api/users');
+      if (res.ok) agents = await res.json();
+    } catch(e){}
+  }
+
+  // Não listar a si mesmo
+  agents = agents.filter(a => a.id !== currentUser.id);
+
+  if (agents.length === 0) {
+      list.innerHTML = `<p style="text-align:center;color:var(--text-muted);padding:1rem;">Nenhum outro atendente disponível.</p>`;
+      return;
+  }
   
   list.innerHTML = agents.map(agent => {
     return `
@@ -470,22 +584,15 @@ function transferChat(agentId, agentName) {
   const chat = allChats.find(c => c.id === selectedChatId);
   if (!chat) return;
   
-  chat.assignedAgentId = agentId;
-  chat.assignedAgentName = agentName;
-  chat.status = 'EM_ATENDIMENTO';
-  
-  chat.messages.push({
-    id: genId(),
-    sender: 'SYSTEM',
-    content: `🔄 Atendimento transferido para ${agentName} por ${currentUser.name}.`,
-    timestamp: new Date().toISOString(),
+  // Emit via Socket.IO para o backend processar para todos
+  socket.emit('transfer_chat', {
+    whatsappJid: chat.whatsappJid,
+    targetAgentId: agentId,
+    targetAgentName: agentName
   });
   
   $('modal-transfer').classList.add('hidden');
   showToast('info', `Atendimento transferido para ${agentName}.`);
-  renderContactList();
-  renderChatMessages(chat);
-  updateBadges();
 }
 
 // ============ UPDATE BADGES ============
@@ -721,11 +828,11 @@ async function initMiscUI() {
   try {
     const res = await fetch('/api/settings');
     if (res.ok) {
-      const data = await res.json();
+      aiSettings = await res.json();
       const nameInput = $('ia-name');
       const promptInput = $('ia-prompt');
-      if (nameInput) nameInput.value = data.botName || '';
-      if (promptInput) promptInput.value = data.systemPrompt || '';
+      if (nameInput) nameInput.value = aiSettings.botName || '';
+      if (promptInput) promptInput.value = aiSettings.systemPrompt || '';
     }
   } catch (e) {
     console.error("Failed to fetch settings:", e);

@@ -10,11 +10,10 @@ const session = require('express-session');
 
 const { processarMensagem, getAllConversas, conversas } = require('./src/conversationFlow');
 const { getConfig, saveConfig } = require('./src/aiSettings');
+const { getUsers, addUser, updateUser, deleteUser } = require('./src/userManagement');
 
 // ============ CONFIGURAÇÕES ============
 const PORT = process.env.PORT || 3000;
-const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-const ADMIN_PASS = process.env.ADMIN_PASS || 'pereira2024';
 
 // ============ EXPRESS & SOCKET.IO ============
 const app = express();
@@ -50,16 +49,65 @@ app.get('/login', (req, res) => {
 
 app.post('/api/login', (req, res) => {
     const { user, pass } = req.body;
-    if (user === ADMIN_USER && pass === ADMIN_PASS) {
+    const allUsers = getUsers();
+    const foundUser = allUsers.find(u => u.username === user && u.password === pass && u.active);
+    
+    if (foundUser) {
         req.session.authenticated = true;
-        return res.json({ success: true });
+        req.session.user = {
+            id: foundUser.id,
+            name: foundUser.name,
+            role: foundUser.role,
+            signature: foundUser.signature
+        };
+        return res.json({ success: true, user: req.session.user });
     }
-    res.status(401).json({ error: 'Credenciais inválidas' });
+    res.status(401).json({ error: 'Credenciais inválidas ou usuário inativo' });
 });
 
 app.get('/api/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/login');
+});
+
+// ============ ROTAS DE USUÁRIO (SESSÃO & EQUIPE) ============
+app.get('/api/me', authMiddleware, (req, res) => {
+    res.json(req.session.user);
+});
+
+app.get('/api/users', authMiddleware, (req, res) => {
+    // Apenas listamos sem senhas
+    const users = getUsers().map(u => ({
+        id: u.id, name: u.name, username: u.username, 
+        role: u.role, signature: u.signature, active: u.active
+    }));
+    res.json(users);
+});
+
+app.post('/api/users', authMiddleware, (req, res) => {
+    if (req.session.user.role !== 'ADMIN') return res.status(403).json({error: 'Acesso negado'});
+    try {
+        const newUser = addUser(req.body);
+        res.json(newUser);
+    } catch(e) {
+        res.status(400).json({error: e.message});
+    }
+});
+
+app.put('/api/users/:id', authMiddleware, (req, res) => {
+    if (req.session.user.role !== 'ADMIN') return res.status(403).json({error: 'Acesso negado'});
+    const updated = updateUser(req.params.id, req.body);
+    res.json(updated);
+});
+
+app.delete('/api/users/:id', authMiddleware, (req, res) => {
+    if (req.session.user.role !== 'ADMIN') return res.status(403).json({error: 'Acesso negado'});
+    try {
+        deleteUser(req.params.id);
+        res.json({success: true});
+    } catch(e) {
+        res.status(400).json({error: e.message});
+    }
 });
 
 // ============ ROTAS DA IA ============
@@ -79,6 +127,55 @@ app.get('/', authMiddleware, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 app.use(express.static(path.join(__dirname, 'public'))); // Fallback para outros arquivos
+
+// ============ INTERAÇÃO DASHBOARD (SOCKET) ============
+io.on('connection', (socket) => {
+    console.log('🖥️  Dashboard conectado');
+    
+    socket.on('send_message', async (data) => {
+        const { chatId, whatsappJid, signedContent, agentId } = data;
+        const conversa = conversas.get(whatsappJid);
+        
+        if (conversa && clientSocket) {
+            // Ao enviar mensagem, o humano assume o controle
+            conversa.status = 'EM_ATENDIMENTO';
+            conversa.assignedAgentId = agentId;
+
+            conversa.historico.push({
+                remetente: 'agent',
+                agentId: agentId,
+                texto: signedContent,
+                timestamp: new Date()
+            });
+
+            await clientSocket.sendMessage(whatsappJid, { text: signedContent });
+            io.emit('conversas_update', getAllConversas());
+        }
+    });
+
+    socket.on('transfer_chat', async (data) => {
+        const { whatsappJid, targetAgentId, targetAgentName } = data;
+        const conversa = conversas.get(whatsappJid);
+
+        if (conversa) {
+            conversa.assignedAgentId = targetAgentId;
+            conversa.status = 'EM_ATENDIMENTO';
+            
+            const systemMsg = `🔄 Atendimento transferido para ${targetAgentName}.`;
+            conversa.historico.push({
+                remetente: 'system',
+                texto: systemMsg,
+                timestamp: new Date()
+            });
+
+            io.emit('conversas_update', getAllConversas());
+        }
+    });
+
+    socket.on('disconnect', () => {
+        console.log('🖥️  Dashboard desconectado');
+    });
+});
 
 // ============ WHATSAPP CLIENT ============
 let whatsappStatus = 'disconnected';
@@ -236,7 +333,21 @@ app.get('/api/status', authMiddleware, (req, res) => {
 });
 
 app.get('/api/conversas', authMiddleware, (req, res) => {
-    res.json(getAllConversas());
+    const all = getAllConversas();
+    const user = req.session.user;
+
+    if (user.role === 'ADMIN') {
+        return res.json(all);
+    } else {
+        // VENDEDOR: Vê apenas o que está na fila (ATENDIMENTO_IA ou FILA_ESPERA) 
+        // ou o que já está atribuído a ele
+        const filtered = all.filter(c => 
+            c.status === 'ATENDIMENTO_IA' || 
+            c.status === 'FILA_ESPERA' || 
+            c.assignedAgentId === user.id
+        );
+        return res.json(filtered);
+    }
 });
 
 app.get('/api/conversas/:numero', authMiddleware, (req, res) => {
@@ -296,8 +407,7 @@ server.listen(PORT, () => {
 ║   🌩️ Pereira AI SDR - Painel Premium        ║
 ║                                              ║
 ║   📊 Login: http://localhost:${PORT}/login       ║
-║   👤 Usuário: ${ADMIN_USER}                      ║
-║   🔑 Senha: ${ADMIN_PASS}                    ║
+║   👥 Sistema de Equipe: Ativo                ║
 ║                                              ║
 ╚══════════════════════════════════════════════╝
   `);

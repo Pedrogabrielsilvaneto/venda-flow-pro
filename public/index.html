@@ -457,6 +457,48 @@
     </div>
   </div>
 
+  <!-- ========== NEW USER MODAL ========== -->
+  <div class="modal-overlay hidden" id="modal-user">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>👥 Novo Usuário</h3>
+        <button class="modal-close" id="modal-user-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="config-form">
+          <div class="config-group">
+            <label>Nome Completo</label>
+            <input type="text" id="new-user-name" class="config-text-input" placeholder="Ex: João da Silva">
+          </div>
+          <div class="config-row">
+            <div class="config-group">
+              <label>Usuário (Login)</label>
+              <input type="text" id="new-user-username" class="config-text-input" placeholder="Ex: joao">
+            </div>
+            <div class="config-group">
+              <label>Senha</label>
+              <input type="password" id="new-user-password" class="config-text-input" placeholder="******">
+            </div>
+          </div>
+          <div class="config-row">
+             <div class="config-group">
+              <label>Cargo</label>
+              <select id="new-user-role" class="config-text-input" style="width: 100%;">
+                <option value="VENDEDOR">Vendedor / Atendente</option>
+                <option value="ADMIN">Administrador (Gerente)</option>
+              </select>
+            </div>
+             <div class="config-group">
+              <label>Assinatura (Bot/Chat)</label>
+              <input type="text" id="new-user-signature" class="config-text-input" placeholder="Ex: João">
+            </div>
+          </div>
+          <button class="btn-primary" id="btn-save-user" style="margin-top: 1rem; width: 100%; justify-content: center;">Criar Usuário</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ========== TOAST CONTAINER ========== -->
   <div class="toast-container" id="toast-container"></div>
 
