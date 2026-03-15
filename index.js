@@ -138,63 +138,79 @@ async function connectToWhatsApp() {
 
         // Inicializa estado se não existir
         if (!userProcessingState.has(numero)) {
-            userProcessingState.set(numero, { isProcessing: false });
+            userProcessingState.set(numero, { isProcessing: false, buffer: [], timer: null });
         }
         const state = userProcessingState.get(numero);
 
-        // SE O BOT JÁ ESTÁ PENSANDO: Retorna e não faz nada para evitar inundação/loops
+        // SE O BOT JÁ ESTÁ PENSANDO: Retorna e não faz nada, ou acumula num buffer futuro (aqui preferi ignorar para simplificar se enviar 30 mensagens)
         if (state.isProcessing) {
             console.log(`⏳ Já processando para ${numero}. Ignorando entrada: "${texto}"`);
             return;
         }
 
-        console.log(`📩 Mensagem de ${numero}: ${texto}`);
-
-        try {
-            // Ativa a trava
-            state.isProcessing = true;
-
-            // Enviar indicativo de "digitando..."
-            await socket.presenceSubscribe(numero);
-            await socket.sendPresenceUpdate('composing', numero);
-
-            const respostas = await processarMensagem(numero, texto);
-
-            for (let i = 0; i < respostas.length; i++) {
-                // Delay artificial humano
-                const delay = Math.min(Math.max(respostas[i].length * 20 + (Math.random() * 1000), 2000), 5000);
-                await new Promise((resolve) => setTimeout(resolve, delay));
-                
-                await socket.sendMessage(numero, { text: respostas[i] });
-                console.log(`📤 Resposta enviada para ${numero}`);
-                
-                if (i < respostas.length - 1) {
-                    await socket.sendPresenceUpdate('composing', numero);
-                }
-            }
-
-            // Para de digitar
-            await socket.sendPresenceUpdate('available', numero);
-
-            io.emit('nova_mensagem', {
-                numero,
-                texto,
-                respostas,
-                timestamp: new Date(),
-            });
-
-            io.emit('conversas_update', getAllConversas());
-
-        } catch (error) {
-            console.error('❌ Erro no processamento principal:', error);
-            // Mensagem de segurança caso tudo falhe no fluxo
-            await socket.sendMessage(numero, { 
-                text: "Puxa, tive um pequeno probleminha aqui! 😅 Poderia me enviar a mensagem novamente, por favor?" 
-            });
-        } finally {
-            // DESBLOQUEIA SEMPRE no final para permitir novas mensagens
-            state.isProcessing = false;
+        // Adiciona a mensagem atual no buffer e reinicia o timer
+        state.buffer.push(texto);
+        if (state.timer) {
+            clearTimeout(state.timer);
         }
+
+        // Aguarda 3.5 segundos sem novas mensagens antes de enviar para a IA
+        state.timer = setTimeout(async () => {
+            state.timer = null;
+            
+            if (state.buffer.length === 0) return;
+
+            const textoCompleto = state.buffer.join('\n');
+            state.buffer = []; // Limpa o buffer para o próximo ciclo
+
+            console.log(`📩 Mensagem processada de ${numero}:\n${textoCompleto}`);
+
+            try {
+                // Ativa a trava
+                state.isProcessing = true;
+
+                // Enviar indicativo de "digitando..."
+                await socket.presenceSubscribe(numero);
+                await socket.sendPresenceUpdate('composing', numero);
+
+                const respostas = await processarMensagem(numero, textoCompleto);
+
+                for (let i = 0; i < respostas.length; i++) {
+                    // Delay artificial humano
+                    const delay = Math.min(Math.max(respostas[i].length * 20 + (Math.random() * 1000), 2000), 5000);
+                    await new Promise((resolve) => setTimeout(resolve, delay));
+                    
+                    await socket.sendMessage(numero, { text: respostas[i] });
+                    console.log(`📤 Resposta enviada para ${numero}`);
+                    
+                    if (i < respostas.length - 1) {
+                        await socket.sendPresenceUpdate('composing', numero);
+                    }
+                }
+
+                // Para de digitar
+                await socket.sendPresenceUpdate('available', numero);
+
+                io.emit('nova_mensagem', {
+                    numero,
+                    texto: textoCompleto,
+                    respostas,
+                    timestamp: new Date(),
+                });
+
+                io.emit('conversas_update', getAllConversas());
+
+            } catch (error) {
+                console.error('❌ Erro no processamento principal:', error);
+                // Mensagem de segurança caso tudo falhe no fluxo
+                await socket.sendMessage(numero, { 
+                    text: "Puxa, tive um pequeno probleminha de conexão 😅 Poderia me enviar a mensagem novamente?" 
+                });
+            } finally {
+                // DESBLOQUEIA SEMPRE no final para permitir novas mensagens
+                state.isProcessing = false;
+            }
+        }, 3500); // 3.5 Segundos de Debounce
     });
 }
 
