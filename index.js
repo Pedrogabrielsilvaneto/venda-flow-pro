@@ -62,7 +62,11 @@ app.get('/login', (req, res) => {
 app.post('/api/login', (req, res) => {
     const { user, pass } = req.body;
     const allUsers = getUsers();
-    const foundUser = allUsers.find(u => u.username === user && u.password === pass && u.active);
+    const foundUser = allUsers.find(u => 
+        u.username.toLowerCase() === user.toLowerCase() && 
+        u.password === pass && 
+        u.active
+    );
     
     if (foundUser) {
         req.session.authenticated = true;
@@ -181,6 +185,15 @@ io.on('connection', (socket) => {
             });
 
             io.emit('conversas_update', getAllConversas());
+
+            // Notifica o vendedor específico que recebeu o cliente
+            io.emit('notification', {
+                type: 'info',
+                title: '🔄 Nova Transferência',
+                message: `Você recebeu o atendimento de ${conversa.nome || 'um cliente'}.`,
+                targetAgentId: targetAgentId,
+                numero: whatsappJid
+            });
         }
     });
 
@@ -188,6 +201,30 @@ io.on('connection', (socket) => {
         console.log('🖥️  Dashboard desconectado');
     });
 });
+
+// ============ SISTEMA DE ALERTAS (FILA) ============
+// Verifica a cada 30 segundos se tem alguém mofando na fila há mais de 2 minutos
+setInterval(() => {
+    const agora = new Date();
+    const naFila = getAllConversas().filter(c => c.status === 'FILA_ESPERA');
+    
+    naFila.forEach(conversa => {
+        const ultimaAtividade = new Date(conversa.ultimaMensagem);
+        const minutosEsperando = (agora - ultimaAtividade) / 1000 / 60;
+        
+        if (minutosEsperando >= 2) {
+            // Se for transferência específica e o vendedor ainda não atendeu, avisa ele de novo
+            // Se for fila geral, avisa todo mundo
+            io.emit('notification', {
+                type: 'warning',
+                title: '⚠️ Cliente aguardando!',
+                message: `${conversa.nome || 'Um cliente'} está esperando atendimento há ${Math.floor(minutosEsperando)} minutos.`,
+                targetAgentId: conversa.assignedAgentId, // Se for null, vai pra todos (tratado no front)
+                numero: conversa.numero
+            });
+        }
+    });
+}, 30000);
 
 // ============ WHATSAPP CLIENT ============
 let whatsappStatus = 'disconnected';

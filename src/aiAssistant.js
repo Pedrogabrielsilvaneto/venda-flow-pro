@@ -4,6 +4,7 @@ const {
 
 const Groq = require('groq-sdk');
 const { getConfig } = require('./aiSettings');
+const { getUsers } = require('./userManagement');
 
 const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
 
@@ -26,13 +27,30 @@ async function generateAIResponse(conversa, userMessage) {
         const config = getConfig();
         const baseSystemPrompt = config.systemPrompt || '';
         
+        const activeUsers = getUsers().filter(u => u.active).map(u => `- ${u.name} (${u.role === 'ADMIN' ? 'Gerente' : 'Especialista de Vendas'})`);
+        
         const finalSystemPrompt = `${baseSystemPrompt}
+
+==============================
+[MEMBROS DA EQUIPE PEREIRA]
+A Pereira Acabamentos possui a seguinte equipe médica humana:
+${getUsers().filter(u => u.active).map(u => `- ${u.name} (ID: ${u.id}) - ${u.role === 'ADMIN' ? 'Gerente' : 'Especialista de Vendas'}`).join('\n')}
+
+Se o cliente pedir EXPRESSAMENTE para falar com um humano, com um vendedor específico (pelo nome), ou se a conversa chegar em um ponto de fechamento de venda final (cálculos exatos de frete/estoque), você deve enviar o cliente para a fila de espera.
+
+Para fazer isso, inclua na mesma TAG invisível:
+- "transferir": true
+- "vendedor_id": "ID_DO_VENDEDOR" (SOMENTE se ele pediu alguém por nome, caso contrário deixe null)
+
+Sempre dê uma mensagem de despedida/encaminhamento amigável quando fizer isso!
+==============================
 
 CATÁLOGO PARA CONSULTA:
 ${JSON.stringify(catalogo, null, 2)}
 
 TAG DE ATUALIZAÇÃO (INVISÍVEL):
-Ao final de cada resposta, inclua [UPDATE: {"nome": "...", "interesse": "..."}] se descobriu algo novo.`;
+Ao final de cada resposta, inclua [UPDATE: {"nome": "...", "interesse": "...", "transferir": false, "vendedor_id": null}] se descobriu algo novo.
+Substitua "transferir": false por "transferir": true SOMENTE SE precisar mandar o cliente para a equipe humana.`;
 
         const messages = [
             { role: "system", content: finalSystemPrompt },
@@ -65,7 +83,17 @@ Ao final de cada resposta, inclua [UPDATE: {"nome": "...", "interesse": "..."}] 
                 if (data.interesse && data.interesse !== "...") {
                     conversa.interesse = data.interesse;
                 }
-                responseText = responseText.replace(/\[UPDATE: .*?\]/, '').trim();
+                if (data.transferir === true) {
+                    conversa.status = 'FILA_ESPERA'; // Manda pra fila humana nas telas do sistema
+                    if (data.vendedor_id) {
+                        conversa.assignedAgentId = data.vendedor_id;
+                    }
+                    conversa.historico.push({
+                        remetente: 'system',
+                        texto: `⚡ Sistema: Atendimento transferido para a fila humana pela Beatriz.${data.vendedor_id ? ' (Direcionado p/ vendedor específico)' : ''}`
+                    });
+                }
+                responseText = responseText.replace(/\[UPDATE: .*?\]/s, '').trim();
             } catch (e) {}
         }
 

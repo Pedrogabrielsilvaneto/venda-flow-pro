@@ -643,6 +643,18 @@ function initSocket() {
   socket.on('nova_mensagem', (data) => {
     handleNewMessage(data);
   });
+
+  socket.on('notification', (data) => {
+    // Se for direcionada para um vendedor específico e não for eu, ignora
+    if (data.targetAgentId && data.targetAgentId !== currentUser.id && currentUser.role !== 'ADMIN') {
+        return;
+    }
+    
+    showToast(data.type || 'info', `${data.title}\n${data.message}`);
+    
+    // Play sound or other alert logic could go here
+    console.log('🔔 Notificação recebida:', data);
+  });
 }
 
 function updateConnectionUI(status) {
@@ -705,6 +717,10 @@ function updateFromSocket(conversas) {
       // Update existing
       if (conv.nome && conv.nome !== 'Indefinido') existing.customerName = conv.nome;
       if (conv.email) existing.customerEmail = conv.email;
+      
+      // Sincroniza status e atribuição do backend
+      existing.status = conv.status || existing.status;
+      existing.assignedAgentId = conv.assignedAgentId || existing.assignedAgentId;
     } else {
       // Create new chat from socket data
       const newChat = {
@@ -713,13 +729,14 @@ function updateFromSocket(conversas) {
         customerName: conv.nome || formatPhone(conv.numero),
         customerPhone: conv.numero,
         customerEmail: conv.email || null,
-        status: 'ATENDIMENTO_IA',
-        assignedAgentId: null,
+        status: conv.status || 'ATENDIMENTO_IA',
+        assignedAgentId: conv.assignedAgentId || null,
         assignedAgentName: null,
         createdAt: conv.criadoEm || new Date().toISOString(),
         messages: (conv.historico || []).map(h => ({
           id: genId(),
-          sender: h.remetente === 'cliente' ? 'CUSTOMER' : 'AI',
+          sender: h.remetente === 'cliente' ? 'CUSTOMER' : (h.remetente === 'bot' ? 'AI' : (h.remetente === 'agent' ? 'AGENT' : 'SYSTEM')),
+          agentId: h.agentId,
           content: h.texto,
           timestamp: h.timestamp || new Date().toISOString(),
         })),
