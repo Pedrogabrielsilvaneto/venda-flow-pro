@@ -163,24 +163,27 @@ function initRBAC() {
   
   // Update user profile
   $('user-name').textContent = currentUser.name;
-  $('user-role').textContent = isAdmin ? 'Administrador' : 'Vendedor';
-  $('user-avatar').textContent = currentUser.name.charAt(0).toUpperCase();
+  if ($('user-role')) {
+    $('user-role').textContent = isAdmin ? 'Administrador' : 'Vendedor';
+  }
   
   // Update signature preview
   const roleTag = currentUser.role === 'ADMIN' ? ' (Gerente)' : '';
-  $('sig-text').textContent = `*${currentUser.signature}${roleTag}:*`;
+  if ($('sig-text')) {
+    $('sig-text').textContent = `*${currentUser.signature}${roleTag}:*`;
+  }
 }
 
 // ============ NAVIGATION ============
 function initNavigation() {
-  $$('.nav-item').forEach(item => {
+  $$('.header-nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
       const section = item.dataset.section;
       if (!section) return;
       
       // Update nav active state
-      $$('.nav-item').forEach(n => n.classList.remove('active'));
+      $$('.header-nav-item').forEach(n => n.classList.remove('active'));
       item.classList.add('active');
       
       // Update page title
@@ -191,27 +194,21 @@ function initNavigation() {
         'config-ia': 'Configurações da IA',
         'conexao': 'Conexão WhatsApp',
       };
-      $('page-title').textContent = titles[section] || 'Dashboard';
+      if ($('page-title')) $('page-title').textContent = titles[section] || 'Dashboard';
       
       // Show/hide sections
       $$('.content-section').forEach(s => s.classList.remove('active'));
       const sectionEl = $(`section-${section}`);
       if (sectionEl) sectionEl.classList.add('active');
-      
-      // Close sidebar on mobile
-      $('sidebar').classList.remove('open');
     });
   });
-  
-  // Mobile menu toggle
-  $('menu-toggle').addEventListener('click', () => {
-    $('sidebar').classList.toggle('open');
-  });
-  
-  // Logout
-  $('btn-logout').addEventListener('click', () => {
-    window.location.href = '/api/logout';
-  });
+
+  const logoutBtn = $('btn-logout-header');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      window.location.href = '/api/logout';
+    });
+  }
 }
 
 // ============ TABS ============
@@ -658,36 +655,37 @@ function initSocket() {
 }
 
 function updateConnectionUI(status) {
-  const dot = $('status-dot');
   const headerDot = $('header-status-dot');
   const headerText = $('header-status-text');
   
+  if (!headerDot || !headerText) return;
+
   // Hide all connection states
-  $('state-disconnected').classList.add('hidden');
-  $('state-qr').classList.add('hidden');
-  $('state-connected').classList.add('hidden');
+  if ($('state-disconnected')) $('state-disconnected').classList.add('hidden');
+  if ($('state-qr')) $('state-qr').classList.add('hidden');
+  if ($('state-connected')) $('state-connected').classList.add('hidden');
   
+  headerDot.classList.remove('online', 'offline', 'waiting');
+
   switch (status) {
     case 'connected':
-      dot.classList.add('online');
       headerDot.classList.add('online');
-      headerDot.classList.remove('offline', 'waiting');
       headerText.textContent = 'Conectado';
-      $('state-connected').classList.remove('hidden');
+      if ($('state-connected')) $('state-connected').classList.remove('hidden');
       break;
     case 'qr_ready':
-      dot.classList.remove('online');
       headerDot.classList.add('waiting');
-      headerDot.classList.remove('online', 'offline');
       headerText.textContent = 'Aguardando QR';
-      $('state-qr').classList.remove('hidden');
+      if ($('state-qr')) $('state-qr').classList.remove('hidden');
+      break;
+    case 'offline':
+    case 'disconnected':
+      headerDot.classList.add('offline');
+      headerText.textContent = 'Desconectado';
+      if ($('state-disconnected')) $('state-disconnected').classList.remove('hidden');
       break;
     default:
-      dot.classList.remove('online');
-      headerDot.classList.add('offline');
-      headerDot.classList.remove('online', 'waiting');
-      headerText.textContent = 'Desconectado';
-      $('state-disconnected').classList.remove('hidden');
+      headerText.textContent = 'Carregando...';
   }
 }
 
