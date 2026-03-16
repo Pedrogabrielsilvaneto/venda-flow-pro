@@ -10,6 +10,7 @@ const {
 } = require('./catalogo');
 
 const { generateAIResponse } = require('./aiAssistant');
+const { getConfig } = require('./aiSettings');
 
 // Armazém de conversas em memória
 const conversas = new Map();
@@ -69,10 +70,23 @@ async function processarMensagem(numero, mensagem) {
 
     registrarMensagem(conversa, 'cliente', texto);
 
-    // Se a conversa NÃO está com a IA, não processamos resposta automática
-    if (conversa.status !== 'ATENDIMENTO_IA') {
-        console.log(`🤖 IA Silenciada para ${numero} (Status: ${conversa.status})`);
-        return []; 
+    // Se a conversa NÃO está com a IA, verificamos se o cliente chamou a IA pelo nome
+    if (conversa.status !== 'ATENDIMENTO_IA' && conversa.status !== 'FINALIZADO') {
+        const config = getConfig();
+        const nomeIA = (config.botName || 'Beatriz').toLowerCase();
+        const msgLower = texto.toLowerCase();
+        
+        // Procura o nome da IA como uma palavra isolada
+        const aiMatch = new RegExp(`\\b${nomeIA}\\b`, 'i').test(msgLower);
+        
+        if (aiMatch) {
+            conversa.status = 'ATENDIMENTO_IA';
+            conversa.assignedAgentId = null;
+            registrarMensagem(conversa, 'system', `🔄 Atendimento retomado pela IA (${config.botName || 'Beatriz'}) a pedido do cliente.`);
+        } else {
+            console.log(`🤖 IA Silenciada para ${numero} (Status: ${conversa.status})`);
+            return []; 
+        }
     }
 
     // Comandos de sistema continuam rápidos
