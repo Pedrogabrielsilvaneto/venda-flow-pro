@@ -12,8 +12,34 @@ const {
 const { generateAIResponse } = require('./aiAssistant');
 const { getConfig } = require('./aiSettings');
 
-// Armazém de conversas em memória
-const conversas = new Map();
+// Armazém de conversas em memória com persistência em arquivo
+const CONVERSAS_FILE = path.join(__dirname, '..', 'conversas.json');
+let conversas = new Map();
+
+function loadConversas() {
+    try {
+        if (fs.existsSync(CONVERSAS_FILE)) {
+            const data = fs.readFileSync(CONVERSAS_FILE, 'utf8');
+            const obj = JSON.parse(data);
+            conversas = new Map(Object.entries(obj));
+            console.log(`📦 ${conversas.size} conversas carregadas do arquivo.`);
+        }
+    } catch (e) {
+        console.error("Erro ao carregar conversas:", e);
+    }
+}
+
+function saveConversas() {
+    try {
+        const obj = Object.fromEntries(conversas);
+        fs.writeFileSync(CONVERSAS_FILE, JSON.stringify(obj, null, 2));
+    } catch (e) {
+        console.error("Erro ao salvar conversas:", e);
+    }
+}
+
+// Carrega as conversas na inicialização do módulo
+loadConversas();
 
 const ESTADOS = {
     NOVO: 'novo',
@@ -106,6 +132,9 @@ async function processarMensagem(numero, mensagem) {
         registrarMensagem(conversa, 'bot', respostaIA);
     }
     
+    // Persiste as conversas em arquivo
+    saveConversas();
+
     return [respostaIA];
 }
 
@@ -442,6 +471,7 @@ module.exports = {
     processarMensagem,
     getConversa,
     getAllConversas,
+    saveConversas,
     ESTADOS,
     conversas,
 };

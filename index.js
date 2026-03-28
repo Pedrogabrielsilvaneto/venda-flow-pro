@@ -9,7 +9,7 @@ const path = require('path');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 
-const { processarMensagem, getAllConversas, conversas } = require('./src/conversationFlow');
+const { processarMensagem, getAllConversas, conversas, saveConversas } = require('./src/conversationFlow');
 const { getConfig, saveConfig } = require('./src/aiSettings');
 const { getUsers, addUser, updateUser, deleteUser } = require('./src/userManagement');
 
@@ -165,6 +165,7 @@ io.on('connection', (socket) => {
             });
 
             await clientSocket.sendMessage(whatsappJid, { text: signedContent });
+            saveConversas();
             io.emit('conversas_update', getAllConversas());
         }
     });
@@ -186,7 +187,6 @@ io.on('connection', (socket) => {
 
             io.emit('conversas_update', getAllConversas());
 
-            // Notifica o vendedor específico que recebeu o cliente
             io.emit('notification', {
                 type: 'info',
                 title: '🔄 Nova Transferência',
@@ -194,6 +194,8 @@ io.on('connection', (socket) => {
                 targetAgentId: targetAgentId,
                 numero: whatsappJid
             });
+
+            saveConversas();
         }
     });
 
@@ -211,6 +213,7 @@ io.on('connection', (socket) => {
                 timestamp: new Date()
             });
 
+            saveConversas();
             io.emit('conversas_update', getAllConversas());
         }
     });
