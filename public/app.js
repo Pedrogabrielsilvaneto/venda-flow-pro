@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initTeamActions();
   initRBAC();
   initSocket();
+  initWhatsAppControl();
   loadMockData(); // Carrega contatos se existirem mockados
   
   // Carrega atendimentos reais
@@ -643,13 +644,40 @@ function initSocket() {
   });
 }
 
+function initWhatsAppControl() {
+  const btn = $('btn-reconnect-wa');
+  if (btn) {
+    btn.onclick = async () => {
+      try {
+        updateConnectionUI('connecting');
+        const res = await fetch('/api/whatsapp/restart', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast('success', 'Reinicialização do Gateway solicitada.');
+        } else {
+          updateConnectionUI('disconnected');
+          showToast('error', 'Erro ao tentar conectar.');
+        }
+      } catch (e) {
+        updateConnectionUI('disconnected');
+        console.error('Erro ao conectar gateway:', e);
+      }
+    };
+  }
+}
+
 function updateConnectionUI(status) {
   const headerDot = $('header-status-dot');
   const headerText = $('header-status-text');
+  const spinner = $('spinner-conn');
+  const icon = $('icon-conn');
+  const title = $('status-title');
+  const desc = $('status-desc');
+  const btn = $('btn-reconnect-wa');
   
   if (!headerDot || !headerText) return;
 
-  // Hide all connection states
+  // Hide all connection states initially
   if ($('state-disconnected')) $('state-disconnected').classList.add('hidden');
   if ($('state-qr')) $('state-qr').classList.add('hidden');
   if ($('state-connected')) $('state-connected').classList.add('hidden');
@@ -664,7 +692,7 @@ function updateConnectionUI(status) {
       break;
     case 'qr_ready':
       headerDot.classList.add('waiting');
-      headerText.textContent = 'QR Ready';
+      headerText.textContent = 'Scan QR';
       if ($('state-qr')) $('state-qr').classList.remove('hidden');
       break;
     case 'offline':
@@ -672,6 +700,27 @@ function updateConnectionUI(status) {
       headerDot.classList.add('offline');
       headerText.textContent = 'Off';
       if ($('state-disconnected')) $('state-disconnected').classList.remove('hidden');
+      if (spinner) spinner.classList.add('hidden');
+      if (icon) icon.classList.remove('hidden');
+      if (title) title.textContent = 'Aguardando Ativação';
+      if (desc) desc.textContent = 'Clique para iniciar o processo de conexão.';
+      if (btn) {
+        btn.textContent = '🚀 Iniciar Gateway';
+        btn.disabled = false;
+      }
+      break;
+    case 'connecting':
+      headerDot.classList.add('waiting');
+      headerText.textContent = 'Connecting...';
+      if ($('state-disconnected')) $('state-disconnected').classList.remove('hidden');
+      if (spinner) spinner.classList.remove('hidden');
+      if (icon) icon.classList.add('hidden');
+      if (title) title.textContent = 'Preparando Gateway...';
+      if (desc) desc.textContent = 'Conectando aos serviços do WhatsApp...';
+      if (btn) {
+        btn.textContent = '⚙️ Por favor, aguarde...';
+        btn.disabled = true;
+      }
       break;
     default:
       headerText.textContent = '';

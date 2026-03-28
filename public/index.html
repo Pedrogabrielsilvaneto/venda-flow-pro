@@ -361,9 +361,18 @@
           <div class="panel-body conexao-body">
             <div class="conexao-state" id="state-disconnected">
               <div class="qr-placeholder">
-                <div class="loading-spinner"></div>
-                <h4>Preparando Gateway...</h4>
-                <p>O cérebro virtual está iniciando os protocolos de conexão.</p>
+                <div class="loading-spinner" id="spinner-conn"></div>
+                <div class="disconnected-icon" id="icon-conn">🔴</div>
+                <h4 id="status-title">Aguardando Conexão</h4>
+                <p id="status-desc">O gateway do WhatsApp está atualmente inativo.</p>
+                <div style="margin-top: 1.5rem;">
+                  <button class="btn-primary" id="btn-reconnect-wa" style="background: var(--primary-glow); border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer; font-weight: 600;">
+                    🚀 Iniciar Gateway
+                  </button>
+                  <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.8rem;">
+                    Dica: Se demorar, clique em reiniciar para forçar um novo QR Code.
+                  </p>
+                </div>
               </div>
             </div>
             <div class="conexao-state hidden" id="state-qr">

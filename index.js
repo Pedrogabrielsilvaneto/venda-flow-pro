@@ -254,6 +254,10 @@ let clientSocket = null;
 
 async function connectToWhatsApp() {
     console.log('🔄 Iniciando conexão com WhatsApp...');
+    whatsappStatus = 'connecting';
+    qrCodeData = null;
+    io.emit('status', { status: 'connecting' });
+    
     const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info');
     
     let version = [2, 3000, 1015901307]; // Versão estável fallback
@@ -442,6 +446,20 @@ app.get('/api/conversas/:numero', authMiddleware, (req, res) => {
         return res.status(404).json({ error: 'Conversa não encontrada' });
     }
     res.json(conversa);
+});
+
+app.post('/api/whatsapp/restart', authMiddleware, (req, res) => {
+    console.log('🔄 Reinicialização manual solicitada pelo painel...');
+    qrCodeData = null;
+    whatsappStatus = 'disconnected';
+    io.emit('status', { status: 'disconnected' });
+    
+    // Tenta reconectar chamando a função principal
+    connectToWhatsApp().then(() => {
+        res.json({ success: true, message: 'Reinicialização iniciada' });
+    }).catch(err => {
+        res.status(500).json({ error: 'Erro ao reiniciar gateway' });
+    });
 });
 
 app.get('/api/stats', authMiddleware, (req, res) => {
