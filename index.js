@@ -12,6 +12,7 @@ const FileStore = require('session-file-store')(session);
 const { processarMensagem, getAllConversas, conversas, saveConversas } = require('./src/conversationFlow');
 const { getConfig, saveConfig } = require('./src/aiSettings');
 const { getUsers, addUser, updateUser, deleteUser } = require('./src/userManagement');
+const { deployRouter } = require('./deploy-webhook');
 
 // ============ CONFIGURAÇÕES ============
 const PORT = process.env.PORT || 3000;
@@ -25,6 +26,9 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json());
+
+// Webhook de deploy automático (POST /deploy)
+deployRouter(app);
 
 // Sessões Persistentes
 app.use(session({
