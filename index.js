@@ -250,16 +250,29 @@ let qrCodeData = null;
 let clientSocket = null;
 
 async function connectToWhatsApp() {
+    console.log('🔄 Iniciando conexão com WhatsApp...');
     const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info');
-    const { version, isLatest } = await fetchLatestBaileysVersion();
-    console.log(`Using WA v${version.join('.')}, isLatest: ${isLatest}`);
     
+    let version = [2, 3000, 1015901307]; // Versão estável fallback
+    let isLatest = false;
+    
+    try {
+        const latest = await fetchLatestBaileysVersion();
+        version = latest.version;
+        isLatest = latest.isLatest;
+        console.log(`⚡ Usando WA v${version.join('.')}, isLatest: ${isLatest}`);
+    } catch (err) {
+        console.log(`⚠️ Falha ao buscar versão mais recente (usando fallback v${version.join('.')}):`, err.message);
+    }
+    
+    console.log('🚀 Criando socket Baileys...');
     const socket = makeWASocket({
         version,
         auth: state,
-        logger: pino({ level: 'silent' }), // Desliga logs pesados
-        browser: Browsers.ubuntu('Chrome'), // Ubuntu Chrome para Baileys
+        logger: pino({ level: 'silent' }), 
+        browser: ['Pereira Bot', 'Chrome', '1.0.0'], // Mais amigável
         markOnlineOnConnect: true,
+        printQRInTerminal: true, // Adicionado para facilitar debug no terminal
     });
 
     clientSocket = socket;
@@ -269,9 +282,12 @@ async function connectToWhatsApp() {
     socket.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
         
+        console.log('📡 Atualização de conexão:', connection || 'QR_UPDATE');
+
         if (qr) {
             qrCodeData = qr;
             whatsappStatus = 'qr_ready';
+            console.log('📸 QR Code gerado e pronto para scan!');
             io.emit('qr', qr);
             io.emit('status', { status: 'qr_ready' });
         }
