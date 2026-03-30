@@ -8,8 +8,8 @@ AUTH_SECRET="vendaflow-super-secret-key-2026-mudar-em-producao"
 MONGODB_URI="mongodb+srv://pedrogabrielsilvaneto_db_user:Vendaflow%402026@vendaflow.qlllyzt.mongodb.net/vendaflowdb?retryWrites=true&w=majority&appName=vendaflow"
 GEMINI_API_KEY="AIzaSyCaFKO9mbtva8bDd_Cn6M-c_oKEsktIYK0"
 AUTH_TRUST_HOST=true
-PORT=3000
 CHROME_PATH=/usr/bin/google-chrome-stable
+
 EOF
 
 # Clean up database - run the cleanup utility script

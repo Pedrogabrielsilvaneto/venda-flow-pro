@@ -15,7 +15,7 @@ const { getUsers, addUser, updateUser, deleteUser } = require('./src/userManagem
 const { deployRouter } = require('./deploy-webhook');
 
 // ============ CONFIGURAÇÕES ============
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // ============ EXPRESS & SOCKET.IO ============
 const app = express();
