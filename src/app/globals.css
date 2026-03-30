@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  /* Pereira Acabamentos - Design System Premium "Chronos IA" */
+  --primary-brand: #0f172a;       
+  --secondary-brand: #1e293b;     
+  --accent-color: #38bdf8;        
+  --accent-glow: rgba(56, 189, 248, 0.4);
+  --accent-hover: #0ea5e9;
+  
+  --background: #020617;          
+  --card-bg: rgba(15, 23, 42, 0.6);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --glass: blur(16px) saturate(180%);
+  
+  --text-main: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  --status-online: #10b981;
+  --status-busy: #f59e0b;
+  --status-error: #ef4444;
+  --status-offline: #64748b;
+
+  --gradient-main: radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.15) 0%, transparent 45%),
+                    radial-gradient(circle at 100% 100%, rgba(14, 165, 233, 0.1) 0%, transparent 45%),
+                    #020617;
+  
+  --gradient-accent: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+  
+  --shadow-premium: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+  --transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  --radius-lg: 1.25rem;
+  --radius-md: 0.75rem;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-main);
+  background: var(--background);
+  background-image: var(--gradient-main);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  scrollbar-width: thin;
+  scrollbar-color: var(--secondary-brand) transparent;
+}
+
+body::-webkit-scrollbar { width: 6px; }
+body::-webkit-scrollbar-track { background: transparent; }
+body::-webkit-scrollbar-thumb { background: var(--secondary-brand); border-radius: 10px; }
+
+h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+.glass-card {
+  background: var(--card-bg);
+  background-image: var(--gradient-glass);
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-premium);
+  transition: var(--transition);
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn-premium {
+  background: var(--gradient-accent);
+  color: var(--primary-brand);
+  padding: 0.8rem 1.75rem;
+  border-radius: var(--radius-md);
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.85rem;
+}
+
+.btn-premium:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(56, 189, 248, 0.4);
+}
+
+.btn-premium:active { transform: translateY(0) scale(0.98); }
+
+.text-gradient {
+  background: linear-gradient(to bottom right, #fff 40%, rgba(255,255,255,0.5));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.fade-up { animation: fadeIn 0.8s var(--transition) forwards; }
+
+/* Grid Utils */
+.flex { display: flex; }
+.grid { display: grid; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 1rem; }

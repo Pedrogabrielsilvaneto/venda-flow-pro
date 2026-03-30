@@ -6,3 +6,10 @@ baileys_auth_info
 .cache
 .DS_Store
 *.log
+# Sensíveis
+project.zip
+id_rsa*
+.vscode/
+.vercel/
+deploy_vps.log
+

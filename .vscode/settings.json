@@ -10,6 +10,10 @@
     "**/.wwebjs_cache": true,
     "**/.next": true,
     "**/.cache": true,
+<<<<<<< HEAD
+=======
+    "**/.vercel": true,
+>>>>>>> 861f19b (feat: login via username admin/admin e rota de recuperação)
     "**/.vscode": false
   },
   "search.exclude": {
@@ -18,7 +22,12 @@
     "**/.wwebjs_auth": true,
     "**/.wwebjs_cache": true,
     "**/.next": true,
+<<<<<<< HEAD
     "**/.cache": true
+=======
+    "**/.cache": true,
+    "**/.vercel": true
+>>>>>>> 861f19b (feat: login via username admin/admin e rota de recuperação)
   },
   "files.watcherExclude": {
     "**/.git/objects/**": true,
@@ -27,6 +36,11 @@
     "**/.wwebjs_auth/**": true,
     "**/.wwebjs_cache/**": true,
     "**/.next/**": true,
+<<<<<<< HEAD
     "**/.cache/**": true
+=======
+    "**/.cache/**": true,
+    "**/.vercel/**": true
+>>>>>>> 861f19b (feat: login via username admin/admin e rota de recuperação)
   }
 }

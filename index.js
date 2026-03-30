@@ -85,8 +85,11 @@ app.post('/api/login', (req, res) => {
     res.status(401).json({ error: 'Credenciais inválidas ou usuário inativo' });
 });
 
-app.get('/api/logout', (req, res) => {
+app.all('/api/logout', (req, res) => {
     req.session.destroy();
+    if (req.path.includes('logout')) {
+         return res.json({ success: true });
+    }
     res.redirect('/login');
 });
 
@@ -418,7 +421,7 @@ async function connectToWhatsApp() {
 }
 
 // ============ API REST (Protegida) ============
-app.get('/api/status', authMiddleware, (req, res) => {
+app.get('/api/status', (req, res) => {
     res.json({
         status: whatsappStatus,
         qr: qrCodeData,

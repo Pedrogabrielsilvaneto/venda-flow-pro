@@ -4,9 +4,20 @@
   "description": "Bot WhatsApp para Pereira Acabamentos - Atendimento automatizado",
   "main": "index.js",
   "scripts": {
+<<<<<<< HEAD
     "start": "node index.js",
     "dev": "node index.js",
     "build": "./render-build.sh"
+=======
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "bot": "node local-bot.js",
+    "cleanup": "node scripts/cleanup.js",
+    "seed": "node seed.js",
+    "deploy": "vercel --prod"
+>>>>>>> 861f19b (feat: login via username admin/admin e rota de recuperação)
   },
   "keywords": [],
   "author": "",
