@@ -2,19 +2,22 @@
 import { useState, useEffect } from 'react';
 
 export default function WhatsAppSettings() {
-    const [status, setStatus] = useState({ ready: false, qrCode: '' });
+    const [status, setStatus] = useState({ ready: false, qrCode: '', updatedAt: null });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [loggingOut, setLoggingOut] = useState(false);
 
-    const BOT_URL = ''; // Proxied via next.config.mjs to localhost:3001
-
     const fetchStatus = async () => {
         try {
-            const res = await fetch(`${BOT_URL}/api/bot/status`);
+            // Buscando da nossa nova rota inteligente que lê do DB
+            const res = await fetch('/api/bot/status');
             if (res.ok) {
                 const data = await res.json();
-                setStatus(data);
+                setStatus({
+                    ready: data.status === 'connected',
+                    qrCode: data.qrCode,
+                    updatedAt: data.updatedAt
+                });
                 setError(false);
             } else {
                 setError(true);

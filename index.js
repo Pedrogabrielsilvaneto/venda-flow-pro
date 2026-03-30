@@ -13,9 +13,37 @@ const { processarMensagem, getAllConversas, conversas, saveConversas } = require
 const { getConfig, saveConfig } = require('./src/aiSettings');
 const { getUsers, addUser, updateUser, deleteUser } = require('./src/userManagement');
 const { deployRouter } = require('./deploy-webhook');
+const mongoose = require('mongoose');
+
+// ============ DATABASE CONNECTION (Sincronização de Status) ============
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('✅ MongoDB (Status Sync) Conectado'))
+    .catch(err => console.error('❌ Erro MongoDB Status:', err));
+
+const BotStatusSchema = new mongoose.Schema({
+    identifier: { type: String, default: 'main_bot' },
+    status: { type: String, default: 'disconnected' },
+    qrCode: { type: String, default: '' },
+    updatedAt: { type: Date, default: Date.now }
+}, { timestamps: true });
+
+const BotStatus = mongoose.models.BotStatus || mongoose.model('BotStatus', BotStatusSchema);
+
+async function syncStatusToDB(status, qr) {
+    try {
+        await BotStatus.findOneAndUpdate(
+            { identifier: 'main_bot' },
+            { status, qrCode: qr || '', updatedAt: new Date() },
+            { upsert: true }
+        );
+        // console.log(`📡 Status no DB: ${status}`);
+    } catch (e) {
+        console.error('❌ Falha na sincronização DB Status:', e);
+    }
+}
 
 // ============ CONFIGURAÇÕES ============
-const PORT = process.env.PORT || 3001;
+const PORT = 3001;
 
 // ============ EXPRESS & SOCKET.IO ============
 const app = express();
@@ -300,8 +328,7 @@ async function connectToWhatsApp() {
 
         if (qr) {
             qrCodeData = qr;
-            whatsappStatus = 'qr_ready';
-            console.log('📸 QR Code gerado e pronto para scan!');
+            syncStatusToDB('qr_ready', qr);
             io.emit('qr', qr);
             io.emit('status', { status: 'qr_ready' });
         }
@@ -310,6 +337,7 @@ async function connectToWhatsApp() {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
             console.log('❌ Conexão fechada. Motivo:', lastDisconnect?.error, 'Reconectando:', shouldReconnect);
             whatsappStatus = 'disconnected';
+            syncStatusToDB('disconnected', '');
             io.emit('status', { status: 'disconnected' });
             
             if(shouldReconnect) {
@@ -321,6 +349,7 @@ async function connectToWhatsApp() {
             console.log('✅ Baileys Conectado com Sucesso! Muito mais rápido ⚡');
             whatsappStatus = 'connected';
             qrCodeData = null;
+            syncStatusToDB('connected', '');
             io.emit('status', { status: 'connected' });
         }
     });
