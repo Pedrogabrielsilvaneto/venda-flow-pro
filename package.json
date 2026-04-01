@@ -11,6 +11,7 @@
     "bot": "node index.js",
     "cleanup": "node scripts/cleanup.js",
     "seed": "node seed.js",
+    "deploy-main": "git add . && git commit -m 'Auto-Deploy: Command Center Update' && git push origin main --force",
     "deploy": "vercel --prod"
   },
   "keywords": [],
