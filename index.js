@@ -1,4 +1,6 @@
 require('dotenv').config();
+require('dotenv').config({ path: '.env.local' }); // Load .env.local for Next.js compatibility
+
 const { makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, isJidGroup, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const express = require('express');
@@ -8,26 +10,41 @@ const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
-
-const { processarMensagem, getAllConversas, conversas, saveConversas } = require('./src/conversationFlow');
-const { getConfig, saveConfig } = require('./src/aiSettings');
-const { getUsers, addUser, updateUser, deleteUser } = require('./src/userManagement');
-const { deployRouter } = require('./deploy-webhook');
 const mongoose = require('mongoose');
 
-// ============ DATABASE CONNECTION (Sincronização de Status) ============
+// Managers & Flow
+const { processarMensagem, getAllConversas, registrarMensagem } = require('./src/conversationFlow');
+const { getConfig, saveConfig, loadConfig } = require('./src/aiSettings');
+const { getUsers, addUser, updateUser, deleteUser } = require('./src/userManagement');
+const { deployRouter } = require('./deploy-webhook');
+
+// Models
+const BotStatus = require('./src/models/BotStatus');
+const User = require('./src/models/User');
+const Lead = require('./src/models/Lead');
+
+// ============ DATABASE CONNECTION ============
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('✅ MongoDB (Status Sync) Conectado'))
-    .catch(err => console.error('❌ Erro MongoDB Status:', err));
-
-const BotStatusSchema = new mongoose.Schema({
-    identifier: { type: String, default: 'main_bot' },
-    status: { type: String, default: 'disconnected' },
-    qrCode: { type: String, default: '' },
-    updatedAt: { type: Date, default: Date.now }
-}, { timestamps: true });
-
-const BotStatus = mongoose.models.BotStatus || mongoose.model('BotStatus', BotStatusSchema);
+    .then(async () => {
+        console.log('✅ MongoDB (Command Center) Conectado');
+        loadConfig(); // Forçar carga inicial das configs do DB
+        
+        // Auto-cria Admin se necessário
+        const adminCount = await User.countDocuments({ role: 'ADMIN' });
+        if (adminCount === 0) {
+            const admin = new User({
+                name: 'Admin Master',
+                username: process.env.ADMIN_USER || 'admin',
+                password: process.env.ADMIN_PASS || 'pereira2024',
+                role: 'ADMIN',
+                signature: 'Admin',
+                active: true
+            });
+            await admin.save();
+            console.log('👤 Admin Principal criado com sucesso.');
+        }
+    })
+    .catch(err => console.error('❌ Erro Crítico MongoDB:', err));
 
 async function syncStatusToDB(status, qr) {
     try {
@@ -36,49 +53,48 @@ async function syncStatusToDB(status, qr) {
             { status, qrCode: qr || '', updatedAt: new Date() },
             { upsert: true }
         );
-        // console.log(`📡 Status no DB: ${status}`);
     } catch (e) {
         console.error('❌ Falha na sincronização DB Status:', e);
     }
 }
 
 // ============ CONFIGURAÇÕES ============
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // ============ EXPRESS & SOCKET.IO ============
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: { origin: '*' },
+    maxHttpBufferSize: 1e8 // Aumenta limite para imagens se necessário
 });
 
 app.use(cors());
 app.use(express.json());
 
-// Webhook de deploy automático (POST /deploy)
+// Webhook de deploy automático
 deployRouter(app);
 
-// Sessões Persistentes
+// Sessões Persistentes no Sistema de Arquivos (pode evoluir pra Redis futuramente)
 app.use(session({
     store: new FileStore({
         path: './sessions',
-        logFn: function() {} // Silencia logs de debug
+        logFn: function() {} 
     }),
-    secret: process.env.SESSION_SECRET || 'pereira-secret',
+    secret: process.env.SESSION_SECRET || 'pereira-command-secret',
     resave: false,
     saveUninitialized: false,
     cookie: { 
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
-        secure: false // true se usar HTTPS
+        secure: false 
     }
 }));
 
-// Middleware de Autenticação
+// Middleware de Autenticação RBAC
 function authMiddleware(req, res, next) {
     if (req.session.authenticated) {
         return next();
     }
-    // Para chamadas de API, retornamos 401 em vez de redirecionar
     if (req.path.startsWith('/api/')) {
         return res.status(401).json({ error: 'Sessão expirada. Faça login novamente.' });
     }
@@ -91,70 +107,73 @@ app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { user, pass } = req.body;
-    const allUsers = getUsers();
-    const foundUser = allUsers.find(u => 
-        u.username.toLowerCase() === user.toLowerCase() && 
-        u.password === pass && 
-        u.active
-    );
-    
-    if (foundUser) {
-        req.session.authenticated = true;
-        req.session.user = {
-            id: foundUser.id,
-            name: foundUser.name,
-            role: foundUser.role,
-            signature: foundUser.signature
-        };
-        return res.json({ success: true, user: req.session.user });
+    try {
+        const foundUser = await User.findOne({ 
+            username: { $regex: new RegExp(`^${user}$`, 'i') },
+            password: pass, // Nota: Se houver hash, comparar aqui
+            active: true
+        });
+        
+        if (foundUser) {
+            req.session.authenticated = true;
+            req.session.user = {
+                id: foundUser._id || foundUser.id,
+                name: foundUser.name,
+                role: foundUser.role,
+                signature: foundUser.signature
+            };
+            return res.json({ success: true, user: req.session.user });
+        }
+        res.status(401).json({ error: 'Credenciais inválidas ou acesso desativado.' });
+    } catch (e) {
+        res.status(500).json({ error: 'Erro interno no servidor de autenticação.' });
     }
-    res.status(401).json({ error: 'Credenciais inválidas ou usuário inativo' });
 });
 
 app.all('/api/logout', (req, res) => {
     req.session.destroy();
-    if (req.path.includes('logout')) {
+    if (req.headers.accept?.includes('application/json')) {
          return res.json({ success: true });
     }
     res.redirect('/login');
 });
 
-// ============ ROTAS DE USUÁRIO (SESSÃO & EQUIPE) ============
+// ============ ROTAS DE USUÁRIO & EQUIPE ============
 app.get('/api/me', authMiddleware, (req, res) => {
     res.json(req.session.user);
 });
 
-app.get('/api/users', authMiddleware, (req, res) => {
-    // Apenas listamos sem senhas
-    const users = getUsers().map(u => ({
-        id: u.id, name: u.name, username: u.username, 
+app.get('/api/users', authMiddleware, async (req, res) => {
+    const users = await getUsers();
+    const safeUsers = users.map(u => ({
+        id: u._id || u.id, name: u.name, username: u.username, 
         role: u.role, signature: u.signature, active: u.active
     }));
-    res.json(users);
+    res.json(safeUsers);
 });
 
-app.post('/api/users', authMiddleware, (req, res) => {
+app.post('/api/users', authMiddleware, async (req, res) => {
     if (req.session.user.role !== 'ADMIN') return res.status(403).json({error: 'Acesso negado'});
     try {
-        const newUser = addUser(req.body);
+        const newUser = await addUser(req.body);
         res.json(newUser);
     } catch(e) {
         res.status(400).json({error: e.message});
     }
 });
 
-app.put('/api/users/:id', authMiddleware, (req, res) => {
+app.put('/api/users/:id', authMiddleware, async (req, res) => {
     if (req.session.user.role !== 'ADMIN') return res.status(403).json({error: 'Acesso negado'});
-    const updated = updateUser(req.params.id, req.body);
+    const updated = await updateUser(req.params.id, req.body);
     res.json(updated);
 });
 
-app.delete('/api/users/:id', authMiddleware, (req, res) => {
+app.delete('/api/users/:id', authMiddleware, async (req, res) => {
     if (req.session.user.role !== 'ADMIN') return res.status(403).json({error: 'Acesso negado'});
     try {
-        deleteUser(req.params.id);
+        await deleteUser(req.params.id);
         res.json({success: true});
     } catch(e) {
         res.status(400).json({error: e.message});
@@ -166,155 +185,135 @@ app.get('/api/settings', authMiddleware, (req, res) => {
     res.json(getConfig());
 });
 
-app.post('/api/settings', authMiddleware, (req, res) => {
+app.post('/api/settings', authMiddleware, async (req, res) => {
     const { botName, systemPrompt } = req.body;
-    saveConfig({ botName, systemPrompt });
+    await saveConfig({ botName, systemPrompt });
     res.json({ success: true });
 });
 
-// Proteger arquivos estáticos (exceto login e css)
+// Arquivos Estáticos Protegidos
 app.use('/style.css', express.static(path.join(__dirname, 'public', 'style.css')));
 app.get('/', authMiddleware, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-app.use(express.static(path.join(__dirname, 'public'))); // Fallback para outros arquivos
+app.use(express.static(path.join(__dirname, 'public'))); 
 
 // ============ INTERAÇÃO DASHBOARD (SOCKET) ============
 io.on('connection', (socket) => {
-    console.log('🖥️  Dashboard conectado');
+    console.log('🖥️ Dashboard conectado via Socket.IO');
     
     socket.on('send_message', async (data) => {
-        const { chatId, whatsappJid, signedContent, agentId } = data;
-        const conversa = conversas.get(whatsappJid);
+        const { whatsappJid, signedContent, agentId } = data;
         
-        if (conversa && clientSocket) {
-            // Ao enviar mensagem, o humano assume o controle
-            conversa.status = 'EM_ATENDIMENTO';
-            conversa.assignedAgentId = agentId;
-
-            conversa.historico.push({
-                remetente: 'agent',
-                agentId: agentId,
-                texto: signedContent,
-                timestamp: new Date()
-            });
+        if (clientSocket) {
+            // Humano assume controle
+            await Lead.findOneAndUpdate(
+                { phoneNumber: whatsappJid },
+                { 
+                    botPaused: true, 
+                    assignedTo: agentId, 
+                    updatedAt: new Date(),
+                    $push: { history: { from: 'agent', text: signedContent, timestamp: new Date(), agentId } }
+                }
+            );
 
             await clientSocket.sendMessage(whatsappJid, { text: signedContent });
-            saveConversas();
-            io.emit('conversas_update', getAllConversas());
+            io.emit('conversas_update', await getAllConversas());
         }
     });
 
     socket.on('transfer_chat', async (data) => {
         const { whatsappJid, targetAgentId, targetAgentName } = data;
-        const conversa = conversas.get(whatsappJid);
+        
+        await Lead.findOneAndUpdate(
+            { phoneNumber: whatsappJid },
+            { 
+                assignedTo: targetAgentId, 
+                botPaused: true, // Garante que fica pausado pro humano
+                etapaChat: 'WAITING_HUMAN',
+                $push: { history: { from: 'system', text: `🔄 Atendimento transferido para ${targetAgentName}.`, timestamp: new Date() } }
+            }
+        );
 
-        if (conversa) {
-            conversa.assignedAgentId = targetAgentId;
-            conversa.status = 'EM_ATENDIMENTO';
-            
-            const systemMsg = `🔄 Atendimento transferido para ${targetAgentName}.`;
-            conversa.historico.push({
-                remetente: 'system',
-                texto: systemMsg,
-                timestamp: new Date()
-            });
+        io.emit('conversas_update', await getAllConversas());
 
-            io.emit('conversas_update', getAllConversas());
-
-            io.emit('notification', {
-                type: 'info',
-                title: '🔄 Nova Transferência',
-                message: `Você recebeu o atendimento de ${conversa.nome || 'um cliente'}.`,
-                targetAgentId: targetAgentId,
-                numero: whatsappJid
-            });
-
-            saveConversas();
-        }
+        io.emit('notification', {
+            type: 'info',
+            title: '🔄 Nova Transferência',
+            message: `Você recebeu um atendimento de um cliente.`,
+            targetAgentId: targetAgentId,
+            numero: whatsappJid
+        });
     });
 
     socket.on('finalize_chat', async (data) => {
         const { whatsappJid } = data;
-        const conversa = conversas.get(whatsappJid);
+        
+        await Lead.findOneAndUpdate(
+            { phoneNumber: whatsappJid },
+            { 
+                etapaChat: 'WELCOME', // Volta ao início para próxima interação
+                botPaused: false,
+                $push: { history: { from: 'system', text: `✅ Atendimento finalizado.`, timestamp: new Date() } }
+            }
+        );
 
-        if (conversa && conversa.status !== 'FINALIZADO') {
-            conversa.status = 'FINALIZADO';
-            conversa.closedAt = new Date();
-            
-            conversa.historico.push({
-                remetente: 'system',
-                texto: `✅ Atendimento finalizado.`,
-                timestamp: new Date()
-            });
-
-            saveConversas();
-            io.emit('conversas_update', getAllConversas());
-        }
+        io.emit('conversas_update', await getAllConversas());
     });
 
     socket.on('disconnect', () => {
-        console.log('🖥️  Dashboard desconectado');
+        console.log('🖥️ Dashboard desconectado');
     });
 });
 
 // ============ SISTEMA DE ALERTAS (FILA) ============
-// Verifica a cada 30 segundos se tem alguém mofando na fila há mais de 2 minutos
-setInterval(() => {
+setInterval(async () => {
     const agora = new Date();
-    const naFila = getAllConversas().filter(c => c.status === 'FILA_ESPERA');
+    const todas = await getAllConversas();
+    const naFila = todas.filter(c => c.status === 'FILA_ESPERA');
     
     naFila.forEach(conversa => {
         const ultimaAtividade = new Date(conversa.ultimaMensagem);
         const minutosEsperando = (agora - ultimaAtividade) / 1000 / 60;
         
-        if (minutosEsperando >= 2) {
-            // Se for transferência específica e o vendedor ainda não atendeu, avisa ele de novo
-            // Se for fila geral, avisa todo mundo
+        if (minutosEsperando >= 3) { // Aumentado para 3 min por polidez
             io.emit('notification', {
                 type: 'warning',
                 title: '⚠️ Cliente aguardando!',
-                message: `${conversa.nome || 'Um cliente'} está esperando atendimento há ${Math.floor(minutosEsperando)} minutos.`,
-                targetAgentId: conversa.assignedAgentId, // Se for null, vai pra todos (tratado no front)
+                message: `${conversa.nome || 'Um cliente'} espera atendimento humano há ${Math.floor(minutosEsperando)} min.`,
+                targetAgentId: conversa.assignedAgentId,
                 numero: conversa.numero
             });
         }
     });
-}, 30000);
+}, 60000);
 
-// ============ WHATSAPP CLIENT ============
+// ============ WHATSAPP CLIENT (BAILEYS) ============
 let whatsappStatus = 'disconnected';
 let qrCodeData = null;
 let clientSocket = null;
 
 async function connectToWhatsApp() {
-    console.log('🔄 Iniciando conexão com WhatsApp...');
+    console.log('🔄 Iniciando motor WhatsApp...');
     whatsappStatus = 'connecting';
     qrCodeData = null;
     io.emit('status', { status: 'connecting' });
     
     const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info');
     
-    let version = [2, 3000, 1015901307]; // Versão estável fallback
-    let isLatest = false;
-    
+    let version = [2, 3000, 1015901307]; 
     try {
         const latest = await fetchLatestBaileysVersion();
         version = latest.version;
-        isLatest = latest.isLatest;
-        console.log(`⚡ Usando WA v${version.join('.')}, isLatest: ${isLatest}`);
-    } catch (err) {
-        console.log(`⚠️ Falha ao buscar versão mais recente (usando fallback v${version.join('.')}):`, err.message);
-    }
+    } catch (err) {}
     
-    console.log('🚀 Criando socket Baileys...');
     const socket = makeWASocket({
         version,
         auth: state,
         logger: pino({ level: 'silent' }), 
-        browser: ['Pereira Bot', 'Chrome', '1.0.0'], // Mais amigável
+        browser: Browsers.ubuntu('Chrome'), 
         markOnlineOnConnect: true,
-        printQRInTerminal: true, // Adicionado para facilitar debug no terminal
+        printQRInTerminal: true,
     });
 
     clientSocket = socket;
@@ -324,8 +323,6 @@ async function connectToWhatsApp() {
     socket.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
         
-        console.log('📡 Atualização de conexão:', connection || 'QR_UPDATE');
-
         if (qr) {
             qrCodeData = qr;
             syncStatusToDB('qr_ready', qr);
@@ -335,7 +332,6 @@ async function connectToWhatsApp() {
 
         if (connection === 'close') {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-            console.log('❌ Conexão fechada. Motivo:', lastDisconnect?.error, 'Reconectando:', shouldReconnect);
             whatsappStatus = 'disconnected';
             syncStatusToDB('disconnected', '');
             io.emit('status', { status: 'disconnected' });
@@ -343,10 +339,10 @@ async function connectToWhatsApp() {
             if(shouldReconnect) {
                 setTimeout(connectToWhatsApp, 3000);
             } else {
-                console.log('❌ LOGOUT DETECTADO! Apague a pasta baileys_auth_info e reinicie.');
+                console.log('❌ Logout detectado. Aguardando ação manual.');
             }
         } else if (connection === 'open') {
-            console.log('✅ Baileys Conectado com Sucesso! Muito mais rápido ⚡');
+            console.log('✅ WhatsApp Conectado — Prontidão Premium');
             whatsappStatus = 'connected';
             qrCodeData = null;
             syncStatusToDB('connected', '');
@@ -354,76 +350,49 @@ async function connectToWhatsApp() {
         }
     });
 
-    // Controle de processamento por usuário para evitar loops e múltiplas chamadas simultâneas
     const userProcessingState = new Map();
 
-    // ============ MENSAGENS RECEBIDAS ============
     socket.ev.on('messages.upsert', async (m) => {
         const msg = m.messages[0];
         if (!msg.message || msg.key.fromMe) return;
 
         const numero = msg.key.remoteJid;
-        
-        // Ignorar grupos
         if (isJidGroup(numero) || numero.includes('@g.us')) return;
 
-        // Pega texto normal ou texto de mensagem com botões/mídia
         const texto = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
         if (!texto) return;
 
-        // Inicializa estado se não existir
         if (!userProcessingState.has(numero)) {
             userProcessingState.set(numero, { isProcessing: false, buffer: [], timer: null });
         }
         const state = userProcessingState.get(numero);
 
-        // SE O BOT JÁ ESTÁ PENSANDO: Retorna e não faz nada, ou acumula num buffer futuro (aqui preferi ignorar para simplificar se enviar 30 mensagens)
-        if (state.isProcessing) {
-            console.log(`⏳ Já processando para ${numero}. Ignorando entrada: "${texto}"`);
-            return;
-        }
+        if (state.isProcessing) return;
 
-        // Adiciona a mensagem atual no buffer e reinicia o timer
         state.buffer.push(texto);
-        if (state.timer) {
-            clearTimeout(state.timer);
-        }
+        if (state.timer) clearTimeout(state.timer);
 
-        // Aguarda 3.5 segundos sem novas mensagens antes de enviar para a IA
         state.timer = setTimeout(async () => {
             state.timer = null;
-            
             if (state.buffer.length === 0) return;
 
             const textoCompleto = state.buffer.join('\n');
-            state.buffer = []; // Limpa o buffer para o próximo ciclo
-
-            console.log(`📩 Mensagem processada de ${numero}:\n${textoCompleto}`);
+            state.buffer = []; 
 
             try {
-                // Ativa a trava
                 state.isProcessing = true;
-
-                // Enviar indicativo de "digitando..."
-                await socket.presenceSubscribe(numero);
                 await socket.sendPresenceUpdate('composing', numero);
 
                 const respostas = await processarMensagem(numero, textoCompleto);
 
                 for (let i = 0; i < respostas.length; i++) {
-                    // Delay artificial humano
-                    const delay = Math.min(Math.max(respostas[i].length * 20 + (Math.random() * 1000), 2000), 5000);
-                    await new Promise((resolve) => setTimeout(resolve, delay));
+                    const delay = Math.min(Math.max(respostas[i].length * 15 + 1500, 2000), 4500);
+                    await new Promise(r => setTimeout(r, delay));
                     
                     await socket.sendMessage(numero, { text: respostas[i] });
-                    console.log(`📤 Resposta enviada para ${numero}`);
-                    
-                    if (i < respostas.length - 1) {
-                        await socket.sendPresenceUpdate('composing', numero);
-                    }
+                    if (i < respostas.length - 1) await socket.sendPresenceUpdate('composing', numero);
                 }
 
-                // Para de digitar
                 await socket.sendPresenceUpdate('available', numero);
 
                 io.emit('nova_mensagem', {
@@ -433,109 +402,66 @@ async function connectToWhatsApp() {
                     timestamp: new Date(),
                 });
 
-                io.emit('conversas_update', getAllConversas());
+                io.emit('conversas_update', await getAllConversas());
 
             } catch (error) {
-                console.error('❌ Erro no processamento principal:', error);
-                // Mensagem de segurança caso tudo falhe no fluxo
-                await socket.sendMessage(numero, { 
-                    text: "Puxa, tive um pequeno probleminha de conexão 😅 Poderia me enviar a mensagem novamente?" 
-                });
+                console.error('❌ Erro Processamento:', error);
             } finally {
-                // DESBLOQUEIA SEMPRE no final para permitir novas mensagens
                 state.isProcessing = false;
             }
-        }, 3500); // 3.5 Segundos de Debounce
+        }, 3500); 
     });
 }
 
-// ============ API REST (Protegida) ============
+// ============ API REST ============
 app.get('/api/status', (req, res) => {
     res.json({
         status: whatsappStatus,
         qr: qrCodeData,
-        totalConversas: conversas.size,
     });
 });
 
-app.get('/api/conversas', authMiddleware, (req, res) => {
-    const all = getAllConversas();
+app.get('/api/conversas', authMiddleware, async (req, res) => {
+    const all = await getAllConversas();
     const user = req.session.user;
 
     if (user.role === 'ADMIN') {
         return res.json(all);
     } else {
-        // VENDEDOR: Vê apenas o que está na fila (ATENDIMENTO_IA ou FILA_ESPERA) 
-        // ou o que já está atribuído a ele
         const filtered = all.filter(c => 
             c.status === 'ATENDIMENTO_IA' || 
             c.status === 'FILA_ESPERA' || 
-            c.assignedAgentId === user.id
+            c.assignedAgentId === user.id ||
+            c.assignedAgentId === user._id?.toString()
         );
         return res.json(filtered);
     }
 });
 
-app.get('/api/conversas/:numero', authMiddleware, (req, res) => {
-    const conversa = conversas.get(req.params.numero);
-    if (!conversa) {
-        return res.status(404).json({ error: 'Conversa não encontrada' });
-    }
-    res.json(conversa);
-});
-
 app.post('/api/whatsapp/restart', authMiddleware, (req, res) => {
-    console.log('🔄 Reinicialização manual solicitada pelo painel...');
     qrCodeData = null;
     whatsappStatus = 'disconnected';
     io.emit('status', { status: 'disconnected' });
-    
-    // Tenta reconectar chamando a função principal
     connectToWhatsApp().then(() => {
-        res.json({ success: true, message: 'Reinicialização iniciada' });
-    }).catch(err => {
-        res.status(500).json({ error: 'Erro ao reiniciar gateway' });
-    });
+        res.json({ success: true });
+    }).catch(() => res.status(500).json({ error: 'Falha ao reiniciar' }));
 });
 
-app.get('/api/stats', authMiddleware, (req, res) => {
-    const todasConversas = getAllConversas();
+app.get('/api/stats', authMiddleware, async (req, res) => {
+    const todas = await getAllConversas();
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    const conversasHoje = todasConversas.filter(
-        (c) => new Date(c.criadoEm) >= hoje
-    ).length;
-
-    const comNome = todasConversas.filter((c) => c.nome).length;
-    const comEmail = todasConversas.filter(
-        (c) => c.email && c.email !== 'Não informado'
-    ).length;
+    const conversasHoje = todas.filter(c => new Date(c.updatedAt) >= hoje).length;
+    const comNome = todas.filter(c => c.nome && c.nome !== '...').length;
+    const comEmail = todas.filter(c => c.email && c.email !== 'Não informado').length;
 
     res.json({
-        totalConversas: todasConversas.length,
+        totalConversas: todas.length,
         conversasHoje,
         leadsComNome: comNome,
         leadsComEmail: comEmail,
-        taxaCaptacao:
-            todasConversas.length > 0
-                ? ((comNome / todasConversas.length) * 100).toFixed(1)
-                : 0,
-    });
-});
-
-// ============ SOCKET.IO ============
-io.on('connection', (socket) => {
-    console.log('🖥️  Dashboard conectado');
-
-    socket.emit('status', { status: whatsappStatus });
-    if (qrCodeData) {
-        socket.emit('qr', qrCodeData);
-    }
-    socket.emit('conversas_update', getAllConversas());
-
-    socket.on('disconnect', () => {
-        console.log('🖥️  Dashboard desconectado');
+        taxaCaptacao: todas.length > 0 ? ((comNome / todas.length) * 100).toFixed(1) : 0,
     });
 });
 
@@ -543,14 +469,9 @@ io.on('connection', (socket) => {
 server.listen(PORT, () => {
     console.log(`
 ╔══════════════════════════════════════════════╗
-║                                              ║
-║   🌩️ Pereira AI SDR - Painel Premium        ║
-║                                              ║
-║   📊 Login: http://localhost:${PORT}/login       ║
-║   👥 Sistema de Equipe: Ativo                ║
-║                                              ║
+║   🌩️ Pereira Command Center - Online       ║
+║   📊 Painel: http://localhost:${PORT}/login       ║
 ╚══════════════════════════════════════════════╝
   `);
-
     connectToWhatsApp();
 });

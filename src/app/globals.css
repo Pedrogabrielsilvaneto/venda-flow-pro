@@ -1,40 +1,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  /* Pereira Acabamentos - Design System Premium "Chronos IA" */
-  --primary-brand: #0f172a;       
-  --secondary-brand: #1e293b;     
-  --accent-color: #38bdf8;        
-  --accent-glow: rgba(56, 189, 248, 0.4);
-  --accent-hover: #0ea5e9;
+  /* Pereira Acabamentos - Design System Premium "Minimalist Neutral" */
+  --primary-brand: #171717;       
+  --secondary-brand: #737373;     
+  --accent-color: #404040;        
+  --accent-glow: rgba(23, 23, 23, 0.15);
+  --accent-hover: #262626;
   
-  --background: #020617;          
-  --card-bg: rgba(15, 23, 42, 0.6);
-  --card-border: rgba(255, 255, 255, 0.08);
+  --background: #fdfdfd;          
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --card-border: rgba(0, 0, 0, 0.06);
   --glass: blur(16px) saturate(180%);
   
-  --text-main: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  --text-main: #171717;
+  --text-secondary: #525252;
+  --text-muted: #8b8b8b;
+  --text-dim: #a3a3a3;
 
   --status-online: #10b981;
   --status-busy: #f59e0b;
   --status-error: #ef4444;
-  --status-offline: #64748b;
+  --status-offline: #a3a3a3;
 
-  --gradient-main: radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.15) 0%, transparent 45%),
-                    radial-gradient(circle at 100% 100%, rgba(14, 165, 233, 0.1) 0%, transparent 45%),
-                    #020617;
+  --gradient-main: radial-gradient(circle at 0% 0%, rgba(245, 245, 245, 1) 0%, transparent 50%),
+                    radial-gradient(circle at 100% 100%, rgba(229, 229, 229, 0.5) 0%, transparent 50%),
+                    #fdfdfd;
   
-  --gradient-accent: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
-  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+  --gradient-accent: linear-gradient(135deg, #404040 0%, #171717 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 100%);
   
-  --shadow-premium: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 20px var(--accent-glow);
+  --shadow-premium: 0 12px 30px -10px rgba(0, 0, 0, 0.05);
+  --shadow-glow: 0 0 15px var(--accent-glow);
   --transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  --radius-lg: 1.25rem;
-  --radius-md: 0.75rem;
+  --radius-lg: 1.5rem;
+  --radius-md: 1rem;
 }
 
 * {
@@ -81,7 +81,7 @@ h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
 
 .btn-premium {
   background: var(--gradient-accent);
-  color: var(--primary-brand);
+  color: #ffffff;
   padding: 0.8rem 1.75rem;
   border-radius: var(--radius-md);
   font-weight: 800;

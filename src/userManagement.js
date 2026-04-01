@@ -1,87 +1,51 @@
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+const User = require('./models/User');
 
-const USERS_FILE = path.join(__dirname, '..', 'users.json');
-
-const defaultUsers = [
-    {
-        id: 'admin_master',
-        name: 'Admin',
-        username: process.env.ADMIN_USER || 'admin',
-        password: process.env.ADMIN_PASS || 'pereira2024',
-        role: 'ADMIN',
-        signature: 'Admin',
-        active: true
-    }
-];
-
-function loadUsers() {
+async function getUsers() {
     try {
-        if (!fs.existsSync(USERS_FILE)) {
-            saveUsers(defaultUsers);
-            return defaultUsers;
-        }
-        const data = fs.readFileSync(USERS_FILE, 'utf8');
-        return JSON.parse(data);
+        return await User.find({}).lean();
     } catch (e) {
-        console.error("Erro ao carregar usuários:", e);
-        return defaultUsers;
+        console.error("Erro ao carregar usuários do DB:", e);
+        return [];
     }
 }
 
-function saveUsers(users) {
-    try {
-        fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-    } catch (e) {
-        console.error("Erro ao salvar usuários:", e);
-    }
-}
-
-function getUsers() {
-    return loadUsers();
-}
-
-function addUser(userData) {
-    const users = loadUsers();
-    
+async function addUser(userData) {
     // Check if username exists
-    if (users.find(u => u.username === userData.username)) {
+    const existing = await User.findOne({ username: userData.username });
+    if (existing) {
         throw new Error("Usuário já existe");
     }
 
-    const newUser = {
-        id: crypto.randomBytes(16).toString('hex'),
+    const newUser = new User({
         name: userData.name,
         username: userData.username,
-        password: userData.password,
+        password: userData.password, // Em prod, usar hash!
         role: userData.role === 'ADMIN' ? 'ADMIN' : 'VENDEDOR',
         signature: userData.signature || userData.name,
         active: true
-    };
+    });
 
-    users.push(newUser);
-    saveUsers(users);
-    return newUser;
+    await newUser.save();
+    return newUser.toObject();
 }
 
-function updateUser(id, updates) {
-    const users = loadUsers();
-    const index = users.findIndex(u => u.id === id);
-    if (index !== -1) {
-        users[index] = { ...users[index], ...updates };
-        saveUsers(users);
-        return users[index];
+async function updateUser(id, updates) {
+    try {
+        const updated = await User.findOneAndUpdate({ id }, updates, { new: true });
+        return updated ? updated.toObject() : null;
+    } catch(e) {
+        // Fallback para _id se id falhar (Next.js usa _id, o bot pode usar id manual)
+        const updated = await User.findByIdAndUpdate(id, updates, { new: true });
+        return updated ? updated.toObject() : null;
     }
-    return null;
 }
 
-function deleteUser(id) {
-    let users = loadUsers();
-    if (id === 'admin_master') throw new Error("Não é possível deletar o admin principal");
+async function deleteUser(id) {
+    // Evita deletar o admin principal se ele tiver um username específico
+    const user = await User.findById(id);
+    if (user && user.username === 'admin') throw new Error("Não é possível deletar o admin principal");
     
-    users = users.filter(u => u.id !== id);
-    saveUsers(users);
+    await User.findByIdAndDelete(id);
 }
 
 module.exports = {

@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const LeadSchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true, unique: true },
@@ -16,9 +16,9 @@ const LeadSchema = new mongoose.Schema({
         timestamp: { type: Date, default: Date.now }
     }],
     botPaused: { type: Boolean, default: false },
-    assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    assignedTo: { type: String }, // Pode ser o ID do User
     intervencaoGestor: { type: Boolean, default: false },
     metadata: { type: mongoose.Schema.Types.Mixed, default: {} },
 }, { timestamps: true });
 
-export default mongoose.models.Lead || mongoose.model('Lead', LeadSchema);
+module.exports = mongoose.models.Lead || mongoose.model('Lead', LeadSchema);

@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const BotStatusSchema = new mongoose.Schema({
     identifier: { type: String, default: 'main_bot' },
@@ -7,4 +7,4 @@ const BotStatusSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 
-export default mongoose.models.BotStatus || mongoose.model('BotStatus', BotStatusSchema);
+module.exports = mongoose.models.BotStatus || mongoose.model('BotStatus', BotStatusSchema);

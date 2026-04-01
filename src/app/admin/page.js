@@ -67,7 +67,7 @@ function StatCard({ label, value, growth, icon, color = 'blue', loading }) {
                 .stat-value {
                     font-size: 1.75rem;
                     font-weight: 800;
-                    color: #fff;
+                    color: var(--text-main);
                     margin: 0;
                     line-height: 1.2;
                     letter-spacing: -0.02em;
@@ -81,10 +81,10 @@ function StatCard({ label, value, growth, icon, color = 'blue', loading }) {
                     gap: 0.25rem;
                 }
                 .growth-label { color: var(--text-muted); font-weight: 400; }
-                .positive { color: var(--status-online); }
-                .negative { color: #f87171; }
+                .positive { color: #8c9b8c; }
+                .negative { color: #a66a6a; }
                 .skeleton {
-                    background: rgba(255, 255, 255, 0.05);
+                    background: rgba(141, 123, 104, 0.05);
                     border-radius: 0.5rem;
                     position: relative;
                     overflow: hidden;
@@ -93,7 +93,7 @@ function StatCard({ label, value, growth, icon, color = 'blue', loading }) {
                     content: "";
                     position: absolute;
                     top: 0; right: 0; bottom: 0; left: 0;
-                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
                     animation: shimmer 1.5s infinite;
                 }
                 .skeleton-number { height: 2rem; width: 60%; }
@@ -261,8 +261,8 @@ export default function AdminDashboard() {
                 .dashboard-container { display: flex; flex-direction: column; gap: 2.5rem; }
                 
                 .dashboard-header { display: flex; justify-content: space-between; align-items: center; }
-                .subtitle { color: var(--text-muted); font-size: 1.1rem; margin-top: 0.5rem; }
-                .header-date { padding: 0.75rem 1.25rem; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 0.75rem; border-radius: 1rem; }
+                .subtitle { color: var(--text-secondary); font-size: 1.1rem; margin-top: 0.5rem; }
+                .header-date { padding: 0.75rem 1.25rem; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 0.75rem; border-radius: var(--radius-md); color: var(--text-main); }
                 .calendar-icon { font-size: 1.1rem; opacity: 0.8; }
 
                 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; }
@@ -273,25 +273,25 @@ export default function AdminDashboard() {
                 .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
                 .header-title { display: flex; align-items: center; gap: 0.75rem; }
                 .header-icon { font-size: 1.25rem; }
-                .header-title h2 { font-size: 1.25rem; font-weight: 700; margin: 0; }
-                .link-premium { color: var(--accent-color); font-weight: 600; font-size: 0.9rem; transition: var(--transition); }
+                .header-title h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-main); }
+                .link-premium { color: var(--secondary-brand); font-weight: 600; font-size: 0.9rem; transition: var(--transition); }
                 .link-premium:hover { letter-spacing: 0.05em; }
 
                 .leads-list { display: flex; flex-direction: column; gap: 0.75rem; }
-                .lead-item { display: flex; gap: 1rem; align-items: center; padding: 1rem; border-radius: 1rem; transition: var(--transition); border: 1px solid transparent; }
-                .lead-item:hover { background: rgba(255, 255, 255, 0.03); border-color: var(--card-border); transform: translateX(8px); }
+                .lead-item { display: flex; gap: 1rem; align-items: center; padding: 1rem; border-radius: var(--radius-md); transition: var(--transition); border: 1px solid transparent; text-decoration: none; }
+                .lead-item:hover { background: rgba(141, 123, 104, 0.03); border-color: var(--card-border); transform: translateX(8px); }
                 
-                .lead-avatar { width: 48px; height: 48px; border-radius: 0.75rem; background: var(--secondary-brand); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; color: var(--accent-color); border: 1px solid var(--card-border); }
+                .lead-avatar { width: 48px; height: 48px; border-radius: 0.75rem; background: var(--secondary-brand); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; color: white; border: 1px solid var(--card-border); }
                 .lead-info { flex: 1; min-width: 0; }
                 .lead-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
-                .lead-name { font-weight: 700; color: #fff; }
+                .lead-name { font-weight: 700; color: var(--text-main); }
                 .lead-time { font-size: 0.75rem; color: var(--text-muted); }
                 
                 .lead-meta { display: flex; align-items: center; gap: 1rem; overflow: hidden; }
-                .stage-badge { font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 2rem; background: rgba(255,255,255,0.05); color: var(--text-muted); text-transform: uppercase; }
-                .stage-welcoming, .stage-collecting_name { color: #818cf8; background: rgba(129, 140, 248, 0.1); }
-                .stage-showing_products { color: var(--accent-color); background: rgba(56, 189, 248, 0.1); }
-                .stage-waiting_human { color: var(--status-busy); background: rgba(245, 158, 11, 0.1); }
+                .stage-badge { font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 2rem; background: rgba(0,0,0,0.05); color: var(--text-dim); text-transform: uppercase; }
+                .stage-welcoming, .stage-collecting_name { color: #8d7b68; background: rgba(141, 123, 104, 0.1); }
+                .stage-showing_products { color: var(--text-main); background: rgba(74, 63, 53, 0.1); }
+                .stage-waiting_human { color: #d6b58c; background: rgba(214, 181, 140, 0.1); }
                 
                 .last-message { font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -299,20 +299,20 @@ export default function AdminDashboard() {
                 .funnel-row { margin-bottom: 1.25rem; }
                 .funnel-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-size: 0.85rem; }
                 .funnel-label { color: var(--text-muted); font-weight: 500; }
-                .funnel-val { color: #fff; font-weight: 700; }
-                .progress-bg { height: 6px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; overflow: hidden; }
+                .funnel-val { color: var(--text-main); font-weight: 700; }
+                .progress-bg { height: 6px; background: rgba(0, 0, 0, 0.05); border-radius: 10px; overflow: hidden; }
                 .progress-fill { height: 100%; background: var(--gradient-accent); border-radius: 10px; transition: width 1s ease-out; }
 
                 .quick-actions-section h3 { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1.25rem; letter-spacing: 0.05em; }
                 .action-buttons { display: flex; flex-direction: column; gap: 0.75rem; }
-                .action-link { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); border-radius: 0.75rem; font-size: 0.9rem; font-weight: 600; color: #fff; transition: var(--transition); }
-                .action-link:hover { background: rgba(56, 189, 248, 0.05); border-color: var(--accent-color); transform: translateY(-2px); }
+                .action-link { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: white; border: 1px solid var(--card-border); border-radius: 0.75rem; font-size: 0.9rem; font-weight: 600; color: var(--text-main); transition: var(--transition); text-decoration: none; }
+                .action-link:hover { background: rgba(200, 182, 166, 0.05); border-color: var(--accent-color); transform: translateY(-2px); }
                 
                 .empty-state { padding: 3rem 1rem; text-align: center; color: var(--text-muted); }
                 .empty-icon { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5; }
 
-                .skeleton-lead { height: 68px; border-radius: 1rem; background: rgba(255,255,255,0.03); margin-bottom: 0.75rem; }
-                .skeleton-funnel { height: 200px; border-radius: 1rem; background: rgba(255,255,255,0.03); }
+                .skeleton-lead { height: 68px; border-radius: 1rem; background: rgba(0,0,0,0.03); margin-bottom: 0.75rem; }
+                .skeleton-funnel { height: 200px; border-radius: 1rem; background: rgba(0,0,0,0.03); }
             `}</style>
         </div>
     );

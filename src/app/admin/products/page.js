@@ -183,28 +183,28 @@ export default function AdminProducts() {
                 @keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
 
                 .products-header { margin-bottom: 2rem; }
-                .products-header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.03em; }
-                .products-header p { color: var(--text-muted); font-size: 1rem; }
+                .products-header h1 { font-size: 2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.03em; }
+                .products-header p { color: var(--text-secondary); font-size: 1rem; }
 
                 .products-layout { display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem; }
                 @media (max-width: 1100px) { .products-layout { grid-template-columns: 1fr; } }
 
                 .section-header { padding: 1.5rem; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; }
-                .section-header h2 { font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0; }
+                .section-header h2 { font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin: 0; }
                 
-                .badge-premium { background: var(--secondary-brand); color: var(--accent-color); font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 2rem; border: 1px solid var(--card-border); }
+                .badge-premium { background: var(--accent-color); color: white; font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 2rem; border: 1px solid var(--card-border); }
 
                 .table-container { min-height: 400px; }
                 .premium-table { width: 100%; border-collapse: collapse; text-align: left; }
-                .premium-table th { padding: 1rem 1.5rem; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid var(--card-border); }
-                .premium-table td { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--card-border); font-size: 0.9rem; }
-                .premium-table tr:hover td { background: rgba(255,255,255,0.02); }
+                .premium-table th { padding: 1rem 1.5rem; font-size: 0.7rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid var(--card-border); }
+                .premium-table td { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--card-border); font-size: 0.9rem; color: var(--text-main); }
+                .premium-table tr:hover td { background: rgba(141, 123, 104, 0.02); }
 
                 .product-info-cell { display: flex; align-items: center; gap: 1rem; }
-                .product-icon { width: 40px; height: 40px; border-radius: 0.75rem; background: rgba(56, 189, 248, 0.1); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border: 1px solid rgba(56, 189, 248, 0.2); }
-                .product-info-cell strong { display: block; color: #fff; margin-bottom: 0.2rem; }
+                .product-icon { width: 40px; height: 40px; border-radius: 0.75rem; background: var(--accent-glow); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border: 1px solid var(--card-border); }
+                .product-info-cell strong { display: block; color: var(--text-main); margin-bottom: 0.2rem; }
 
-                .price-tag-premium { color: var(--accent-color); font-weight: 800; background: rgba(56, 189, 248, 0.05); padding: 0.25rem 0.6rem; border-radius: 0.5rem; }
+                .price-tag-premium { color: var(--primary-brand); font-weight: 800; background: rgba(74, 63, 53, 0.05); padding: 0.25rem 0.6rem; border-radius: 0.5rem; }
                 .tag-outline { color: var(--text-muted); border: 1px solid var(--card-border); padding: 0.2rem 0.6rem; border-radius: 0.5rem; font-size: 0.75rem; background: rgba(255,255,255,0.03); }
 
                 .btn-icon-delete { background: none; border: none; cursor: pointer; transition: var(--transition); opacity: 0.6; }
@@ -214,24 +214,24 @@ export default function AdminProducts() {
                 .premium-form { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
                 .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
                 .input-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
-                .input-group input, .input-group select, .input-group textarea { background: rgba(2, 6, 23, 0.4); border: 1px solid var(--card-border); border-radius: 0.75rem; padding: 0.75rem 1rem; color: #fff; font-size: 0.95rem; outline: none; transition: var(--transition); }
-                .input-group input:focus, .input-group textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1); }
+                .input-group input, .input-group select, .input-group textarea { background: rgba(255, 255, 255, 0.5); border: 1px solid var(--card-border); border-radius: 0.75rem; padding: 0.75rem 1rem; color: var(--text-main); font-size: 0.95rem; outline: none; transition: var(--transition); }
+                .input-group input:focus, .input-group textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--accent-glow); }
                 
                 .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
-                .btn-submit-premium { background: var(--gradient-accent); color: var(--primary-brand); border: none; padding: 1rem; border-radius: 0.75rem; font-weight: 800; cursor: pointer; transition: var(--transition); margin-top: 0.5rem; font-size: 0.95rem; }
-                .btn-submit-premium:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4); }
+                .btn-submit-premium { background: var(--gradient-accent); color: white; border: none; padding: 1rem; border-radius: 0.75rem; font-weight: 800; cursor: pointer; transition: var(--transition); margin-top: 0.5rem; font-size: 0.95rem; }
+                .btn-submit-premium:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 15px var(--accent-glow); }
                 .btn-submit-premium:disabled { opacity: 0.5; cursor: not-allowed; }
 
-                .helper-card { padding: 1.5rem; background: rgba(56, 189, 248, 0.03); border: 1px solid rgba(56, 189, 248, 0.1); margin-top: 1rem; }
-                .helper-card h3 { font-size: 0.9rem; font-weight: 800; color: var(--accent-color); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
-                .helper-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0; }
+                .helper-card { padding: 1.5rem; background: rgba(200, 182, 166, 0.1); border: 1px solid var(--card-border); margin-top: 1rem; }
+                .helper-card h3 { font-size: 0.9rem; font-weight: 800; color: var(--primary-brand); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+                .helper-card p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0; }
 
-                .loading-state { height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); gap: 1rem; }
-                .spinner-premium { width: 32px; height: 32px; border: 3px solid rgba(56, 189, 248, 0.1); border-top-color: var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; }
+                .loading-state { height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-dim); gap: 1rem; }
+                .spinner-premium { width: 32px; height: 32px; border: 3px solid var(--card-border); border-top-color: var(--secondary-brand); border-radius: 50%; animation: spin 1s linear infinite; }
                 @keyframes spin { to { transform: rotate(360deg); } }
                 
-                .empty-state { text-align: center; padding: 4rem 1rem; color: var(--text-muted); }
+                .empty-state { text-align: center; padding: 4rem 1rem; color: var(--text-dim); }
                 .empty-state span { font-size: 3rem; display: block; margin-bottom: 1rem; opacity: 0.3; }
                 
                 .text-xs { font-size: 0.75rem; }

@@ -78,9 +78,9 @@ export default function AdminLayout({ children }) {
 
         .admin-sidebar {
           width: var(--sidebar-width);
-          background: rgba(15, 23, 42, 0.8);
+          background: var(--card-bg);
           backdrop-filter: var(--glass);
-          color: var(--foreground);
+          color: var(--text-main);
           padding: 2.5rem 1.5rem;
           display: flex;
           flex-direction: column;
@@ -108,23 +108,23 @@ export default function AdminLayout({ children }) {
           align-items: center;
           justify-content: center;
           background: var(--gradient-accent);
-          color: var(--primary-brand);
-          border-radius: 1rem;
-          box-shadow: 0 8px 16px rgba(56, 189, 248, 0.3);
+          color: white;
+          border-radius: 1.2rem;
+          box-shadow: 0 8px 16px var(--accent-glow);
         }
 
         .admin-logo h1 {
           font-size: 1.5rem;
           font-weight: 800;
           margin: 0;
-          color: #fff;
+          color: var(--text-main);
           line-height: 1;
           letter-spacing: -0.04em;
         }
 
         .admin-logo span {
           font-size: 0.8rem;
-          color: var(--accent-color);
+          color: var(--secondary-brand);
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.1em;
@@ -142,7 +142,7 @@ export default function AdminLayout({ children }) {
           align-items: center;
           gap: 1rem;
           padding: 0.875rem 1.25rem;
-          border-radius: 1rem;
+          border-radius: var(--radius-md);
           text-decoration: none;
           color: var(--text-muted);
           font-size: 0.9375rem;
@@ -151,16 +151,16 @@ export default function AdminLayout({ children }) {
         }
 
         .nav-link:hover {
-          background: rgba(255, 255, 255, 0.05);
-          color: #fff;
+          background: rgba(141, 123, 104, 0.05);
+          color: var(--text-main);
           transform: translateX(6px);
         }
 
         .nav-link.active {
-          background: rgba(56, 189, 248, 0.1);
-          color: var(--accent-color);
+          background: rgba(200, 182, 166, 0.15);
+          color: var(--primary-brand);
           font-weight: 700;
-          box-shadow: inset 4px 0 0 var(--accent-color);
+          box-shadow: inset 4px 0 0 var(--secondary-brand);
         }
 
         .nav-icon { font-size: 1.4rem; display: flex; align-items: center; }
@@ -184,14 +184,14 @@ export default function AdminLayout({ children }) {
         .user-avatar {
           width: 44px;
           height: 44px;
-          background: var(--secondary-brand);
+          background: var(--accent-color);
           border-radius: 1rem;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 1rem;
           font-weight: 700;
-          color: var(--accent-color);
+          color: white;
           border: 1px solid var(--card-border);
         }
 
@@ -199,7 +199,7 @@ export default function AdminLayout({ children }) {
           font-size: 0.9375rem;
           font-weight: 600;
           margin: 0;
-          color: #fff;
+          color: var(--text-main);
         }
 
         .user-role {
@@ -211,9 +211,9 @@ export default function AdminLayout({ children }) {
         .btn-logout {
           width: 100%;
           padding: 0.875rem;
-          background: rgba(239, 68, 68, 0.05);
-          border: 1px solid rgba(239, 68, 68, 0.1);
-          color: #ef4444;
+          background: rgba(201, 140, 140, 0.05);
+          border: 1px solid rgba(201, 140, 140, 0.1);
+          color: #a66a6a;
           border-radius: 1rem;
           font-weight: 600;
           cursor: pointer;
@@ -221,9 +221,9 @@ export default function AdminLayout({ children }) {
         }
 
         .btn-logout:hover {
-          background: #ef4444;
+          background: #c98c8c;
           color: #fff;
-          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+          box-shadow: 0 4px 12px rgba(201, 140, 140, 0.3);
         }
 
         .admin-main {
@@ -231,6 +231,7 @@ export default function AdminLayout({ children }) {
           flex: 1;
           padding: 3rem;
           position: relative;
+          background: transparent;
         }
       `}</style>
     </div>

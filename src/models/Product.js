@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema({
     nome: { type: String, required: true },
@@ -13,4 +13,4 @@ const ProductSchema = new mongoose.Schema({
     tags: { type: [String], default: [] }, // Para buscas rápidas da IA
 }, { timestamps: true });
 
-export default mongoose.models.Product || mongoose.model('Product', ProductSchema);
+module.exports = mongoose.models.Product || mongoose.model('Product', ProductSchema);

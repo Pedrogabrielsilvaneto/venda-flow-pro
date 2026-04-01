@@ -182,18 +182,18 @@ export default function AdminConfig() {
                 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
                 .page-header-premium { margin-bottom: 2.5rem; }
-                .page-header-premium h1 { font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem; letter-spacing: -0.04em; }
-                .page-header-premium p { color: var(--text-muted); font-size: 1rem; }
+                .page-header-premium h1 { font-size: 2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.04em; }
+                .page-header-premium p { color: var(--text-secondary); font-size: 1rem; }
 
                 .config-grid { display: flex; flex-direction: column; gap: 2rem; }
 
-                .config-section-card { overflow: hidden; }
-                .section-header-premium { padding: 1.5rem 2rem; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.01); }
-                .section-header-premium h2 { margin: 0; font-size: 1.15rem; font-weight: 700; color: #fff; }
+                .config-section-card { overflow: hidden; background: var(--card-bg); border-radius: var(--radius-lg); }
+                .section-header-premium { padding: 1.5rem 2rem; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; background: rgba(141, 123, 104, 0.02); }
+                .section-header-premium h2 { margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-main); }
                 .text-muted-xs { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
 
-                .btn-save-mini { background: var(--gradient-accent); color: var(--primary-brand); border: none; padding: 0.5rem 1.25rem; border-radius: 0.6rem; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: var(--transition); }
-                .btn-save-mini:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); }
+                .btn-save-mini { background: var(--gradient-accent); color: white; border: none; padding: 0.5rem 1.25rem; border-radius: 0.6rem; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: var(--transition); box-shadow: 0 4px 12px var(--accent-glow); }
+                .btn-save-mini:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 15px var(--accent-glow); }
 
                 .config-form-body { padding: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
                 @media (max-width: 900px) { .config-form-body { grid-template-columns: 1fr; } }
@@ -201,17 +201,17 @@ export default function AdminConfig() {
                 .config-field-row { display: flex; flex-direction: column; gap: 0.75rem; }
                 .row-full { grid-column: 1 / -1; }
 
-                .label-col label { display: block; font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem; }
+                .label-col label { display: block; font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem; }
                 .field-help-text { font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; display: block; }
 
                 .input-wrapper-premium { position: relative; }
-                input, select, textarea { width: 100%; background: rgba(2, 6, 23, 0.4); border: 1px solid var(--card-border); border-radius: 0.75rem; padding: 0.75rem 1rem; color: #fff; font-size: 0.95rem; outline: none; transition: var(--transition); font-family: inherit; }
-                input:focus, textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1); }
+                input, select, textarea { width: 100%; background: white; border: 1px solid var(--card-border); border-radius: 0.75rem; padding: 0.75rem 1rem; color: var(--text-main); font-size: 0.95rem; outline: none; transition: var(--transition); font-family: inherit; }
+                input:focus, textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--accent-glow); }
                 
                 textarea { resize: vertical; min-height: 100px; }
 
                 .btn-toggle-eye { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 0.25rem; }
-                .btn-toggle-eye:hover { color: #fff; }
+                .btn-toggle-eye:hover { color: var(--text-main); }
 
                 .text-muted-xs { font-size: 0.8rem; color: var(--text-muted); }
             `}</style>

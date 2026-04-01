@@ -1,7 +1,4 @@
-const fs = require('fs');
-const path = require('path');
-
-const CONFIG_PATH = path.join(__dirname, '..', 'ai_config.json');
+const AIConfig = require('./models/AIConfig');
 
 const DEFAULT_CONFIG = {
     botName: "Beatriz",
@@ -40,36 +37,46 @@ RESTRITIVOS:
 - NUNCA use a palavra "Indefinido" para se referir ao nome do cliente. Se não souber o nome, use [UPDATE: {"nome": "..."}].`,
 };
 
-let currentConfig = { ...DEFAULT_CONFIG };
+let memConfig = { ...DEFAULT_CONFIG };
 
-function loadConfig() {
+async function loadConfig() {
     try {
-        if (fs.existsSync(CONFIG_PATH)) {
-            const data = fs.readFileSync(CONFIG_PATH, 'utf8');
-            currentConfig = { ...DEFAULT_CONFIG, ...JSON.parse(data) };
+        const configDoc = await AIConfig.findOne({ identifier: 'main_config' });
+        if (configDoc) {
+            memConfig = { ...DEFAULT_CONFIG, ...configDoc.toObject() };
+        } else {
+            // Cria primeira vez se não existir no DB
+            const newDoc = new AIConfig({ ...DEFAULT_CONFIG, identifier: 'main_config' });
+            await newDoc.save();
+            memConfig = newDoc.toObject();
         }
     } catch (e) {
-        console.error("Erro ao carregar configurações da IA:", e);
+        console.error("Erro ao carregar configurações da IA do DB:", e);
     }
 }
 
-function saveConfig(newConfig) {
+async function saveConfig(newConfig) {
     try {
-        currentConfig = { ...currentConfig, ...newConfig };
-        fs.writeFileSync(CONFIG_PATH, JSON.stringify(currentConfig, null, 2));
+        await AIConfig.findOneAndUpdate(
+            { identifier: 'main_config' },
+            { ...newConfig, updatedAt: new Date() },
+            { upsert: true }
+        );
+        memConfig = { ...memConfig, ...newConfig };
     } catch (e) {
-        console.error("Erro ao salvar configurações da IA:", e);
+        console.error("Erro ao salvar configurações da IA no DB:", e);
     }
 }
 
 function getConfig() {
-    return currentConfig;
+    return memConfig;
 }
 
-// Load initially
+// Inicializa no carregamento do módulo (pode levar alguns ms pra conectar)
 loadConfig();
 
 module.exports = {
     getConfig,
-    saveConfig
+    saveConfig,
+    loadConfig // Exposto para forçar recarga se necessário
 };
